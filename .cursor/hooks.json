@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "uv run --directory \"./secondbrain\" python hooks/session-start.py",
+        "timeout": 15
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "uv run --directory \"./secondbrain\" python hooks/pre-compact.py",
+        "timeout": 10
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "uv run --directory \"./secondbrain\" python hooks/session-end.py",
+        "timeout": 10
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "uv run --directory \"./secondbrain\" python hooks/after-agent-response.py",
+        "timeout": 6
+      }
+    ]
+  }
+}
+

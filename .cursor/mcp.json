@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "ruflo": {
+      "command": "node",
+      "args": [".cursor/scripts/run-ruflo-mcp.cjs"],
+      "env": {
+        "CLAUDE_FLOW_TOOL_GROUPS": "all",
+        "CLAUDE_FLOW_LOG_LEVEL": "debug"
+      }
+    },
+    "@21st-dev/magic": {
+      "command": "node",
+      "args": [".cursor/scripts/run-21st-magic-mcp.cjs"]
+    },
+    "figma": {
+      "url": "https://mcp.figma.com/mcp"
+    }
+  }
+}

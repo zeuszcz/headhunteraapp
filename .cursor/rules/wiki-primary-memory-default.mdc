@@ -1,0 +1,31 @@
+---
+description: Wiki is default project memory; avoid redundant rescans of wiki and codebase unless precision is required
+alwaysApply: true
+---
+
+# Wiki Primary Memory Default
+
+## Main rule
+
+- Treat `secondbrain/knowledge/*` and `secondbrain/knowledge/project-context.md` as default project memory in every session.
+- Assume this memory is active context unless the user explicitly asks for a deep fresh audit.
+
+## Token-efficiency behavior
+
+- Do not repeatedly re-scan the whole repository for topics already captured in wiki.
+- Do not repeatedly re-scan the whole wiki for the same topic in one work cycle.
+- Use targeted file reads only when exact implementation details or line-accurate edits are required.
+
+## Decision policy
+
+- For architecture, bugfix strategy, feature planning, and trade-offs: start from wiki concepts/connections first.
+- Use codebase scanning only to:
+  - confirm current implementation details,
+  - resolve ambiguity/conflicts,
+  - perform concrete edits safely.
+
+## Update policy
+
+- If a request introduces durable changes (architecture, invariants, security, cache, protocol, core patterns), persist updates to wiki in the same cycle.
+- Keep updates concise and non-noisy; avoid wiki churn for trivial edits.
+

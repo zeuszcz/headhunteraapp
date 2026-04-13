@@ -1,0 +1,1 @@
+"""headhunteraapp FastAPI application."""

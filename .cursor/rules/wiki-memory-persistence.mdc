@@ -1,0 +1,34 @@
+---
+description: Wiki-first memory workflow: use SecondBrain as primary knowledge and persist durable decisions after impactful requests
+alwaysApply: true
+---
+
+# Wiki Memory Persistence
+
+## Core policy
+
+- Treat `secondbrain/knowledge/*` as the primary project memory before broad repo scanning.
+- Use `secondbrain/knowledge/index.md` first, then open only relevant concept pages.
+- Keep wiki knowledge "hot" in decision-making for architecture, bugfix strategy, and feature additions.
+
+## Per-request knowledge impact check
+
+After each user request, run a quick check:
+
+1. Did we change architecture, security, caching, protocols, data contracts, or reusable patterns?
+2. Did we fix a regression/root cause that can influence future implementation decisions?
+3. Did we agree on a new operational rule or product constraint?
+
+If **yes** to any item, persist it to wiki in the same work cycle.
+
+## Required ingest steps (when impact exists)
+
+1. Update existing page or create one in `secondbrain/knowledge/concepts/`.
+2. If a new page was created, update `secondbrain/knowledge/index.md`.
+3. Append a concise event line in `secondbrain/knowledge/log.md` (`ingest | ...`).
+
+## Scope guard
+
+- Do not add noisy wiki entries for trivial edits (renames, formatting, tiny UI copy tweaks).
+- Persist only durable knowledge likely to affect future decisions, implementation, or debugging.
+

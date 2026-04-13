@@ -1,0 +1,31 @@
+---
+description: Completion gate for impactful changes: no done status without wiki ingest + log entry
+alwaysApply: true
+---
+
+# Wiki Ingest Completion Gate
+
+## Gate trigger
+
+This gate is triggered when a request results in at least one of:
+
+- architecture change;
+- security model/policy change;
+- caching/invalidation strategy change;
+- protocol/data-contract/pattern update;
+- root-cause regression fix with reusable lessons.
+
+## Mandatory completion criteria
+
+For triggered tasks, completion is allowed only if all conditions are met:
+
+1. Relevant page in `secondbrain/knowledge/concepts/` is created or updated.
+2. `secondbrain/knowledge/index.md` is updated when a new concept page appears.
+3. `secondbrain/knowledge/log.md` contains a new `ingest | ...` entry for this work cycle.
+
+## Enforcement behavior
+
+- Do not mark task as fully complete before the three steps above.
+- If code is ready but wiki ingest is missing, explicitly report status as: `code done, ingest pending`.
+- Keep ingest concise and durable; avoid noisy entries for trivial edits.
+

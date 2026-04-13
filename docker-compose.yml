@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: headhunteraapp-db
+    environment:
+      POSTGRES_USER: headhunter
+      POSTGRES_PASSWORD: headhunter
+      POSTGRES_DB: headhunter
+    ports:
+      - "5432:5432"
+    volumes:
+      - headhunter_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U headhunter -d headhunter"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  headhunter_pgdata:
