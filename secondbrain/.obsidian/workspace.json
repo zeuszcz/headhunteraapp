@@ -179,8 +179,13 @@
       "bases:Создать новую базу": false
     }
   },
-  "active": "file-explorer",
+  "active": "index-tab",
   "lastOpenFiles": [
+    "knowledge/concepts/frontend-profiles-work-objects-talent-ui.md",
+    "knowledge/concepts/domain-enterprise-extensions.md",
+    "knowledge/concepts/domain-roles-and-flows.md",
+    "knowledge/concepts/testing-backend-and-frontend.md",
+    "knowledge/concepts/workforce-marketplace-mvp.md",
     "knowledge/concepts/stack-fastapi-react-postgres.md",
     "knowledge/concepts/engineering-roles-and-agent-hats.md",
     "knowledge/concepts/agent-memory-and-session-notes.md",
@@ -202,11 +207,6 @@
     "knowledge/connections/e2ee-restore-and-redecrypt-flow.md",
     "knowledge/connections/calls-rest-ws-runtime-flow.md",
     "knowledge/concepts/wiki-taxonomy-and-link-conventions.md",
-    "knowledge/concepts/module-digest-frontend-domains.md",
-    "knowledge/concepts/module-digest-docs-assurance-and-ops.md",
-    "knowledge/concepts/backend-auth-session-and-security-baseline.md",
-    "knowledge/concepts/backend-api-and-lifespan-map.md",
-    "knowledge/qa/ux-2026-04-12T12-03-55+03-00.md",
     "scripts/update_context.py",
     "hooks/post-tool-use.py"
   ]

@@ -5,7 +5,26 @@ from sqlalchemy import create_engine, pool
 
 from app.config import get_settings
 from app.db import Base
-from app.models import JobApplication  # noqa: F401
+from app.models import (  # noqa: F401
+    ApiKey,
+    AuditLog,
+    BrigadeProfile,
+    CompanyProfile,
+    Conversation,
+    Message,
+    Notification,
+    ObjectResponse,
+    Organization,
+    OrganizationMember,
+    OrganizationSubscription,
+    Plan,
+    Review,
+    ShortlistEntry,
+    User,
+    WebhookSubscription,
+    WorkObject,
+    WorkerProfile,
+)
 
 config = context.config
 if config.config_file_name is not None:

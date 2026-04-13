@@ -15,7 +15,7 @@ updated: 2026-04-13
 
 ## Домен MVP
 
-Таблица `job_applications`: компания, роль, статус отклика, заметки, даты. CRUD через REST; UI — форма и список.
+Схема маркетплейса: `users`, профили компании/работника/бригады, `work_objects`, `object_responses`, чаты, отзывы. См. миграцию `002_workforce_marketplace` и концепт [[knowledge/concepts/workforce-marketplace-mvp]].
 
 ## Документация
 

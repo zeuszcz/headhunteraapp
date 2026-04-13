@@ -29,6 +29,10 @@ class Settings(BaseSettings):
         "http://localhost:5173",
     ]
 
+    jwt_secret: str = "dev-change-me-use-env-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60 * 24 * 7
+
 
 @lru_cache
 def get_settings() -> Settings:

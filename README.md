@@ -1,72 +1,91 @@
 # headhunteraapp
 
-Веб-приложение для учёта откликов на вакансии (MVP): **FastAPI** + **PostgreSQL** + **React (Vite)**. Всё можно запустить локально на Windows / macOS / Linux.
+Двусторонний рынок труда для строительных и смежных ниш: **компании** публикуют объекты и задачи, **работники** и **бригады** откликаются с условиями (цена, сроки, текст). Есть **профили** сторон, **лента с фильтрами**, **отклики**, **чат** и **отзывы с рейтингом**.
 
-## Что внутри
+Стек: **FastAPI** + **PostgreSQL** + **React (Vite)** + **JWT** (bcrypt).
 
-| Компонент | Путь | Назначение |
-|-----------|------|------------|
-| API | `backend/` | REST на FastAPI, SQLAlchemy 2 async, Alembic |
-| БД | Docker `postgres:16` | Данные откликов |
-| UI | `frontend/` | React 19 + TypeScript, прокси `/api` → бэкенд |
-
-Подробное описание потоков и слоёв: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Подробное описание сущностей и потоков: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Требования
 
-- **Docker Desktop** (или Docker Engine + Compose) — для PostgreSQL. На Windows **запустите Docker Desktop** до команды `docker compose`; иначе появится ошибка про pipe `dockerDesktopLinuxEngine`.
-- **Python 3.11+** и **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — бэкенд  
-- **Node.js 20+** и **npm** — фронтенд  
+- **PostgreSQL** — либо через **Docker Desktop** (`docker compose`), либо **установленный на ПК** сервер (удобно настраивать через **DBeaver**).
+- **Python 3.11+** и **[uv](https://docs.astral.sh/uv/getting-started/installation/)**
+- **Node.js 20+** и **npm**
 
-## Быстрый старт (локально)
+Полная инструкция по созданию БД и миграциям: **[scripts/README-DATABASE.md](scripts/README-DATABASE.md)**.
 
-### 1. Клонировать и перейти в каталог проекта
+## Запуск всего одной командой
+
+**Git Bash** (из корня репозитория):
 
 ```bash
-cd headhunteraapp
+bash scripts/start.sh
 ```
 
-### 2. Поднять базу данных
+**PowerShell:**
+
+```powershell
+.\scripts\start.ps1
+```
+
+Поднимется Docker (Postgres), миграции, затем API и фронт. Откройте в браузере **http://127.0.0.1:5173** — это приложение. Swagger: **http://127.0.0.1:8000/docs**. Остановка: **Ctrl+C** в том же терминале (в Git Bash). Если `start.ps1` открыл два окна cmd — закройте их.
+
+## Быстрый старт (пошагово)
+
+### 1. База данных
+
+**Docker** (запустите Docker Desktop, затем):
+
+PowerShell:
+
+```powershell
+.\scripts\dev-up.ps1
+```
+
+Git Bash:
+
+```bash
+bash scripts/dev-up.sh
+```
+
+Или только контейнер и миграции вручную:
 
 ```bash
 docker compose up -d
 ```
 
-Дождитесь статуса `healthy` (обычно несколько секунд). Порт **5432** на localhost.
+**Локальный PostgreSQL + DBeaver:** один раз выполните SQL из [scripts/init-local-db.sql](scripts/init-local-db.sql) и [scripts/grant-schema-headhunter.sql](scripts/grant-schema-headhunter.sql), затем:
 
-### 3. Переменные окружения (опционально)
+```powershell
+.\scripts\migrate.ps1
+```
 
-По умолчанию бэкенд подключается к `postgresql://headhunter:headhunter@127.0.0.1:5432/headhunter` (совпадает с `docker-compose.yml`).
+### 2. Переменные окружения
 
-При необходимости скопируйте:
+Скопируйте пример и при необходимости задайте `JWT_SECRET`:
 
 ```bash
 cp .env.example .env
-# или только для API:
 cp backend/.env.example backend/.env
 ```
 
-### 4. Бэкенд: зависимости и миграции
+`JWT_SECRET` в продакшене должен быть длинной случайной строкой.
+
+### 3. Миграции и API
 
 ```bash
 cd backend
 uv sync
 uv run alembic upgrade head
-```
-
-Запуск API (режим разработки с автоперезагрузкой):
-
-```bash
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Проверка: откройте [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) — ожидается JSON `{"status":"ok",...}`.
+- Health: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+- Swagger: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-Документация OpenAPI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+Миграции: `001` создаёт устаревшую демо-таблицу, `002` переводит схему на полноценный маркетплейс (пользователи, профили, объекты, отклики, чаты, отзывы). На пустой БД применяются обе подряд.
 
-### 5. Фронтенд
-
-Новый терминал:
+### 4. Фронтенд
 
 ```bash
 cd frontend
@@ -74,27 +93,21 @@ npm install
 npm run dev
 ```
 
-Откройте [http://127.0.0.1:5173](http://127.0.0.1:5173) — форма добавляет отклики, список подгружается с API.
+Откройте [http://127.0.0.1:5173](http://127.0.0.1:5173). Запросы к `/api` проксируются на порт `8000`.
 
-В режиме `npm run dev` запросы к `/api` проксируются на `http://127.0.0.1:8000` (см. `frontend/vite.config.ts`).
+## Сценарий проверки MVP
+
+1. Зарегистрируйте **компанию**, заполните **профиль** (раздел «Профиль»), создайте **объект** («Кабинет» → новый объект или `/objects/new`).
+2. В другом браузере (или инкогнито) зарегистрируйте **работника** или **бригаду**, заполните профиль.
+3. В ленте **Объекты** найдите карточку, откройте её, отправьте **отклик** с условиями; при необходимости нажмите **Написать компании** для чата.
+4. Под компанией откройте тот же объект: увидите **отклики**, сможете **принять/отклонить**, открыть **чат с исполнителем**.
+5. После контакта можно оставить **отзыв** о компании с карточки объекта (исполнитель).
 
 ## Остановка
 
-- Фронт / бэкенд: `Ctrl+C` в соответствующих терминалах  
-- PostgreSQL: `docker compose down` (данные в volume сохраняются)  
-- Удалить данные БД: `docker compose down -v`  
-
-## Полезные команды
-
-```bash
-# новая миграция после изменения моделей (из каталога backend)
-uv run alembic revision --autogenerate -m "describe change"
-uv run alembic upgrade head
-
-# прод-сборка фронта
-cd frontend && npm run build && npm run preview
-```
+- `Ctrl+C` в терминалах API и фронта.
+- `docker compose down` (данные в volume сохраняются; `docker compose down -v` — удалить БД).
 
 ## SecondBrain
 
-Память проекта для агентов и команды: каталог `secondbrain/` (см. `secondbrain/README.md`).
+Память проекта для команды и агентов: [secondbrain/README.md](secondbrain/README.md).

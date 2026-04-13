@@ -4,12 +4,12 @@ Compact orientation for agents. Expand `knowledge/concepts/` as the app grows.
 
 ## Product
 
-- **headhunteraapp** — job search / career workflow tooling (scope to be filled in as the codebase lands).
+- **headhunteraapp** — двусторонний рынок труда (стройка/монтаж и смежные ниши): компании публикуют объекты и задачи, работники и бригады откликаются с условиями; профили, чат, отзывы и рейтинг (см. `docs/ARCHITECTURE.md` и `knowledge/concepts/workforce-marketplace-mvp.md`).
 
 ## Repository layout
 
 - **`backend/`** — FastAPI app (`app.main:app`), API under `/api/v1`, PostgreSQL via async SQLAlchemy.
-- **`frontend/`** — React + Vite dev server `:5173`, proxies `/api` to backend `:8000`.
+- **`frontend/`** — React + Vite dev server `:5173`, proxies `/api` to backend `:8000`. Крупные изменения UI (профили, карточки объектов/таланта, токены): [[knowledge/concepts/frontend-profiles-work-objects-talent-ui]].
 - **`docker-compose.yml`** — PostgreSQL 16 for local dev (requires Docker Desktop running on Windows).
 - **`docs/ARCHITECTURE.md`** — architecture and data flow.
 - **SecondBrain** (`secondbrain/`) — durable project memory: `knowledge/`, `daily/`, `raw/`.
@@ -23,6 +23,16 @@ Compact orientation for agents. Expand `knowledge/concepts/` as the app grows.
 ## Engineering process
 
 - Role separation (Product, Tech Lead, Backend, Frontend, QA, DevOps): see [[knowledge/concepts/engineering-roles-and-agent-hats]] and `.cursor/rules/engineering-roles-and-handoffs.mdc`.
+
+## Tests
+
+- Команды и нюансы (Postgres для integration, `engine.dispose` в pytest): [[knowledge/concepts/testing-backend-and-frontend]].
+
+## Enterprise (реализовано в коде)
+
+- Домен и видимость: [docs/DOMAIN_MODEL.md](../../docs/DOMAIN_MODEL.md); каталог исполнителей для компаний; лента объектов без черновиков; статусы объекта включая `draft` / `in_progress`.
+- Таблицы миграции `003`: организации, shortlist, уведомления, аудит, API-ключи, webhooks, тарифы, подписка организации; лимит объектов в месяц по тарифу.
+- Подробнее: [[knowledge/concepts/domain-enterprise-extensions]].
 
 ## Conventions
 
