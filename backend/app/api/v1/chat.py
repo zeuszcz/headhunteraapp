@@ -10,6 +10,7 @@ from app.deps import get_current_user
 from app.enums import UserRole
 from app.models import Conversation, Message, User, WorkObject
 from app.schemas.chat import ConversationCreate, ConversationRead, MessageCreate, MessageRead
+from app.services.conversation_list import enrich_conversations
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 async def list_conversations(
     user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_db),
-) -> list[Conversation]:
+) -> list[ConversationRead]:
     result = await session.execute(
         select(Conversation)
         .where(
@@ -29,7 +30,23 @@ async def list_conversations(
         )
         .order_by(Conversation.created_at.desc())
     )
-    return list(result.scalars().all())
+    rows = list(result.scalars().all())
+    return await enrich_conversations(session, rows, user.id)
+
+
+@router.get("/conversations/{conversation_id}", response_model=ConversationRead)
+async def get_conversation(
+    conversation_id: uuid.UUID,
+    user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_db),
+) -> ConversationRead:
+    conv = await session.get(Conversation, conversation_id)
+    if conv is None:
+        raise HTTPException(status_code=404, detail="Чат не найден")
+    if user.id not in (conv.company_user_id, conv.participant_user_id):
+        raise HTTPException(status_code=403, detail="Нет доступа")
+    enriched = await enrich_conversations(session, [conv], user.id)
+    return enriched[0]
 
 
 @router.post("/conversations", response_model=ConversationRead, status_code=201)
@@ -37,7 +54,7 @@ async def get_or_create_conversation(
     payload: ConversationCreate,
     user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_db),
-) -> Conversation:
+) -> ConversationRead:
     obj = await session.get(WorkObject, payload.work_object_id)
     if obj is None:
         raise HTTPException(status_code=404, detail="Объект не найден")
@@ -64,7 +81,7 @@ async def get_or_create_conversation(
     )
     hit = existing.scalar_one_or_none()
     if hit:
-        return hit
+        return (await enrich_conversations(session, [hit], user.id))[0]
 
     row = Conversation(
         work_object_id=obj.id,
@@ -74,7 +91,7 @@ async def get_or_create_conversation(
     session.add(row)
     await session.flush()
     await session.refresh(row)
-    return row
+    return (await enrich_conversations(session, [row], user.id))[0]
 
 
 @router.get("/conversations/{conversation_id}/messages", response_model=list[MessageRead])

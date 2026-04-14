@@ -563,6 +563,88 @@ button:focus-visible {
   margin-bottom: 0.25rem;
 }
 
+.chat-row__body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.chats-page {
+  padding: 0;
+  overflow: hidden;
+}
+
+.chats-page__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chats-page__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease;
+}
+
+.chats-page__item:last-child {
+  border-bottom: none;
+}
+
+.chats-page__item:hover {
+  background: rgba(79, 70, 229, 0.06);
+}
+
+.chats-page__item-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.chats-page__object-title {
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  line-height: 1.35;
+  margin-bottom: 0.35rem;
+}
+
+.chats-page__peer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.chats-page__peer-name {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.chats-page__role {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.chats-page__chevron {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  font-size: 1.1rem;
+  opacity: 0.65;
+}
+
+[data-theme="dark"] .chats-page__item:hover {
+  background: rgba(79, 70, 229, 0.12);
+}
+
 .chat-input-row {
   display: flex;
   gap: 0.65rem;
@@ -580,12 +662,6 @@ button:focus-visible {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-soft);
-}
-
-.chats-list a {
-  display: inline-block;
-  padding: 0.5rem 0;
-  font-weight: 500;
 }
 
 .protected-skeleton {

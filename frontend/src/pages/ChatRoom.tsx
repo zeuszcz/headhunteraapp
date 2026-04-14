@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { EmptyState } from "../components/EmptyState";
 import { PageLayout } from "../components/PageLayout";
+import { useAuth } from "../context/AuthContext";
 
 type Message = {
   id: string;
@@ -11,13 +12,31 @@ type Message = {
   created_at: string;
 };
 
+type ConversationMeta = {
+  id: string;
+  work_object_title?: string | null;
+  peer_display_name?: string | null;
+  peer_role?: string | null;
+};
+
 export function ChatRoom() {
   const { id } = useParams<{ id: string }>();
+  const { me } = useAuth();
+  const [meta, setMeta] = useState<ConversationMeta | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [body, setBody] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const initialLoadDone = useRef(false);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+    void apiFetch<ConversationMeta>(`/api/v1/chat/conversations/${id}`)
+      .then(setMeta)
+      .catch(() => setMeta(null));
+  }, [id]);
 
   const load = useCallback(async () => {
     if (!id) {
@@ -60,16 +79,23 @@ export function ChatRoom() {
     }
   }
 
-  const shortId = id ? id.slice(0, 8) : "";
+  const peerTitle = meta?.peer_display_name?.trim() || "Переписка";
+  const objectSubtitle = meta?.work_object_title?.trim();
 
   return (
     <PageLayout
-      title="Переписка"
-      subtitle={id ? `Диалог · ${shortId}…` : undefined}
+      title={peerTitle}
+      subtitle={
+        objectSubtitle ? (
+          <span className="muted">{objectSubtitle}</span>
+        ) : (
+          <span className="muted">Диалог по объекту</span>
+        )
+      }
       breadcrumbs={[
         { to: "/", label: "Главная" },
         { to: "/chats", label: "Чаты" },
-        { to: id ? `/chats/${id}` : "/chats", label: "Переписка" },
+        { to: id ? `/chats/${id}` : "/chats", label: peerTitle },
       ]}
     >
       <p>
@@ -88,12 +114,16 @@ export function ChatRoom() {
         />
       ) : messages.length > 0 ? (
         <div className="chat-panel">
-          {messages.map((m) => (
-            <div key={m.id} className="chat-row">
-              <div className="chat-row__from">{m.sender_user_id.slice(0, 8)}…</div>
-              <div>{m.body}</div>
-            </div>
-          ))}
+          {messages.map((m) => {
+            const fromSelf = me && m.sender_user_id === me.id;
+            const fromLabel = fromSelf ? "Вы" : meta?.peer_display_name?.trim() || "Собеседник";
+            return (
+              <div key={m.id} className="chat-row">
+                <div className="chat-row__from">{fromLabel}</div>
+                <div className="chat-row__body">{m.body}</div>
+              </div>
+            );
+          })}
         </div>
       ) : null}
       <div className="chat-input-row" style={{ marginTop: "0.85rem" }}>

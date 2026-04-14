@@ -17,6 +17,9 @@ class ConversationRead(BaseModel):
     company_user_id: uuid.UUID
     participant_user_id: uuid.UUID
     created_at: datetime
+    work_object_title: str | None = None
+    peer_display_name: str | None = None
+    peer_role: str | None = None
 
 
 class MessageCreate(BaseModel):
