@@ -16,6 +16,7 @@ async def work_object_to_read(session: AsyncSession, row: WorkObject) -> WorkObj
         update={
             "company_name": cp.company_name if cp else None,
             "company_city": cp.city if cp else None,
+            "company_avatar_url": cp.avatar_url if cp else None,
         }
     )
 
@@ -39,6 +40,7 @@ async def enrich_many_by_ids(session: AsyncSession, objects: list[WorkObject]) -
                 update={
                     "company_name": cp.company_name if cp else None,
                     "company_city": cp.city if cp else None,
+                    "company_avatar_url": cp.avatar_url if cp else None,
                 }
             )
         )

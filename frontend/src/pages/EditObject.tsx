@@ -171,6 +171,7 @@ export function EditObject() {
     >
       <WorkObjectForm
         mode="edit"
+        objectId={id}
         defaultValues={defaultValues}
         onSubmit={handleSubmit}
         submitLabel="Сохранить изменения"

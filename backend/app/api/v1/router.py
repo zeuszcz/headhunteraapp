@@ -14,11 +14,13 @@ from app.api.v1 import (
     reviews,
     shortlist,
     talent,
+    uploads,
     work_objects,
 )
 
 api_router = APIRouter()
 api_router.include_router(auth.router)
+api_router.include_router(uploads.router)
 api_router.include_router(profiles.router)
 api_router.include_router(talent.router)
 api_router.include_router(shortlist.router)

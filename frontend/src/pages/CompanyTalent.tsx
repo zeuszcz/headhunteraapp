@@ -141,61 +141,78 @@ export function CompanyTalent() {
       }
       sidebar={sidebar}
     >
-      <div className="card filters-panel" style={{ marginBottom: "1rem" }}>
-        <label>
-          Объект для переписки
-          <select
-            value={chatObjectId}
-            onChange={(e) => setChatObjectId(e.target.value)}
-            style={{ marginTop: 6, width: "100%", maxWidth: 420 }}
+      <div className="talent-object-bar card">
+        <div className="talent-object-bar__row">
+          <label className="talent-object-bar__field">
+            <span className="talent-object-bar__label">Объект для переписки</span>
+            <select
+              className="input-select"
+              value={chatObjectId}
+              onChange={(e) => setChatObjectId(e.target.value)}
+              aria-label="Объект для переписки"
+            >
+              <option value="">Выберите объект…</option>
+              {mine.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.title} ({o.status})
+                </option>
+              ))}
+            </select>
+          </label>
+          <Link to="/objects/new" className="btn btn--secondary talent-object-bar__create">
+            Новый объект
+          </Link>
+        </div>
+        <p className="talent-object-bar__hint muted">Переписка создаётся в контексте выбранной задачи. Если списка нет — создайте объект.</p>
+      </div>
+
+      <div className="talent-toolbar card">
+        <div className="talent-toolbar__tabs" role="tablist" aria-label="Тип исполнителей">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "workers"}
+            className={`btn btn--sm ${tab === "workers" ? "btn--primary" : "btn--secondary"}`}
+            onClick={() => setTab("workers")}
           >
-            <option value="">— выберите —</option>
-            {mine.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.title} ({o.status})
-              </option>
-            ))}
-          </select>
-        </label>
-        <p className="muted" style={{ fontSize: "0.85rem", margin: 0 }}>
-          Нет объектов?{" "}
-          <Link to="/objects/new">Создать</Link>
-        </p>
-      </div>
-
-      <div className="flex-gap" style={{ marginBottom: "1rem" }}>
-        <button
-          type="button"
-          className={`btn ${tab === "workers" ? "btn--primary" : "btn--secondary"}`}
-          onClick={() => setTab("workers")}
-        >
-          Работники
-        </button>
-        <button
-          type="button"
-          className={`btn ${tab === "brigades" ? "btn--primary" : "btn--secondary"}`}
-          onClick={() => setTab("brigades")}
-        >
-          Бригады
-        </button>
-      </div>
-
-      {tab === "workers" ? (
-        <div className="filters-panel card">
-          <input placeholder="Поиск" value={q} onChange={(e) => setQ(e.target.value)} />
-          <input placeholder="Город" value={city} onChange={(e) => setCity(e.target.value)} />
-          <button type="button" className="btn btn--primary" onClick={() => void loadWorkers()}>
+            Работники
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "brigades"}
+            className={`btn btn--sm ${tab === "brigades" ? "btn--primary" : "btn--secondary"}`}
+            onClick={() => setTab("brigades")}
+          >
+            Бригады
+          </button>
+        </div>
+        <div className="talent-toolbar__search">
+          <input
+            className="talent-toolbar__input"
+            placeholder="Поиск по профилю"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Поиск"
+          />
+          {tab === "workers" ? (
+            <input
+              className="talent-toolbar__input talent-toolbar__input--city"
+              placeholder="Город"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              aria-label="Город"
+            />
+          ) : null}
+          <button
+            type="button"
+            className="btn btn--primary btn--sm"
+            onClick={() => (tab === "workers" ? void loadWorkers() : void loadBrigades())}
+          >
             Найти
           </button>
         </div>
-      ) : (
-        <div className="filters-panel card">
-          <input placeholder="Поиск" value={q} onChange={(e) => setQ(e.target.value)} />
-          <button type="button" className="btn btn--primary" onClick={() => void loadBrigades()}>
-            Найти
-          </button>
-        </div>
-      )}
+      </div>
 
       {err ? <p className="form-error">{err}</p> : null}
 

@@ -3,6 +3,9 @@
 .env.local
 *.local
 
+# Local uploads (dev)
+backend/data/uploads/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -70,6 +70,7 @@ class WorkObjectRead(BaseModel):
     updated_at: datetime
     company_name: str | None = None
     company_city: str | None = None
+    company_avatar_url: str | None = None
 
 
 class WorkObjectListResponse(BaseModel):

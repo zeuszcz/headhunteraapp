@@ -16,6 +16,7 @@ export type CompanyProfile = {
   avg_budget_note: string | null;
   payment_methods_text: string | null;
   media_note: string | null;
+  avatar_url: string | null;
   rating_avg: number;
   reviews_count: number;
   created_at: string;
@@ -36,6 +37,7 @@ export type WorkerProfile = {
   bio: string | null;
   documents_note: string | null;
   portfolio_note: string | null;
+  avatar_url: string | null;
   rating_avg: number;
   reviews_count: number;
   created_at: string;
@@ -57,6 +59,7 @@ export type BrigadeProfile = {
   availability_note: string | null;
   bio: string | null;
   portfolio_note: string | null;
+  avatar_url: string | null;
   rating_avg: number;
   reviews_count: number;
   created_at: string;
@@ -94,6 +97,7 @@ export function parseCompanyProfile(raw: Record<string, unknown>): CompanyProfil
     avg_budget_note: raw.avg_budget_note != null ? String(raw.avg_budget_note) : null,
     payment_methods_text: raw.payment_methods_text != null ? String(raw.payment_methods_text) : null,
     media_note: raw.media_note != null ? String(raw.media_note) : null,
+    avatar_url: raw.avatar_url != null && String(raw.avatar_url).trim() ? String(raw.avatar_url) : null,
     rating_avg: Number(raw.rating_avg) || 0,
     reviews_count: Number(raw.reviews_count) || 0,
     created_at: str(raw.created_at),
@@ -116,6 +120,7 @@ export function parseWorkerProfile(raw: Record<string, unknown>): WorkerProfile 
     bio: raw.bio != null ? String(raw.bio) : null,
     documents_note: raw.documents_note != null ? String(raw.documents_note) : null,
     portfolio_note: raw.portfolio_note != null ? String(raw.portfolio_note) : null,
+    avatar_url: raw.avatar_url != null && String(raw.avatar_url).trim() ? String(raw.avatar_url) : null,
     rating_avg: Number(raw.rating_avg) || 0,
     reviews_count: Number(raw.reviews_count) || 0,
     created_at: str(raw.created_at),
@@ -139,6 +144,7 @@ export function parseBrigadeProfile(raw: Record<string, unknown>): BrigadeProfil
     availability_note: raw.availability_note != null ? String(raw.availability_note) : null,
     bio: raw.bio != null ? String(raw.bio) : null,
     portfolio_note: raw.portfolio_note != null ? String(raw.portfolio_note) : null,
+    avatar_url: raw.avatar_url != null && String(raw.avatar_url).trim() ? String(raw.avatar_url) : null,
     rating_avg: Number(raw.rating_avg) || 0,
     reviews_count: Number(raw.reviews_count) || 0,
     created_at: str(raw.created_at),

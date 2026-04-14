@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import { DashboardObjectCard } from "../components/DashboardObjectCard";
 import { EmptyState } from "../components/EmptyState";
 import { PageLayout } from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
@@ -70,13 +71,10 @@ export function Dashboard() {
             secondaryAction={{ to: "/feed", label: "Открыть ленту" }}
           />
         ) : (
-          <ul className="feed-list">
+          <ul className="feed-grid">
             {mine.map((o) => (
-              <li key={o.id} className="feed-card card">
-                <Link to={`/objects/${o.id}`} className="feed-card__link">
-                  {o.title}
-                </Link>
-                <div className="feed-card__meta">Статус: {o.status}</div>
+              <li key={o.id} className="feed-card">
+                <DashboardObjectCard object={o} />
               </li>
             ))}
           </ul>

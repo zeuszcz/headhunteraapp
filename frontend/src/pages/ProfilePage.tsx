@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { uploadAvatar } from "../api/uploads";
 import { apiFetch } from "../api/http";
+import { AvatarUploadField } from "../components/AvatarUploadField";
 import { HelpHint } from "../components/HelpHint";
 import { PageLayout } from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
@@ -206,13 +208,13 @@ export function ProfilePage() {
   return (
     <PageLayout
       title="Профиль"
-      subtitle="Заполните карточку — так компаниям и заказчикам проще принять решение."
+      subtitle="Блоки ниже соответствуют разделам публичной карточки: заполняйте по очереди или в любом порядке."
       breadcrumbs={[
         { to: "/", label: "Главная" },
         { to: "/profile", label: "Профиль" },
       ]}
     >
-      <div className="card form-wide">
+      <div className="profile-page card">
         <div className="profile-completion" role="status" aria-label="Заполненность профиля">
           <div className="profile-completion__bar" style={{ width: `${completion}%` }} />
           <span className="profile-completion__label">Профиль заполнен на {completion}%</span>
@@ -221,376 +223,484 @@ export function ProfilePage() {
         {err ? <p className="form-error">{err}</p> : null}
 
         {me.role === "company" && company ? (
-          <form onSubmit={saveCompany} className="form-stack">
-            <fieldset className="form-section">
-              <legend className="form-section__title">Компания</legend>
-              <label>
-                Название *
-                <input
-                  required
-                  value={company.company_name}
-                  onChange={(e) => setCompany({ ...company, company_name: e.target.value })}
-                />
-              </label>
-              <label>
-                Город
-                <input value={company.city ?? ""} onChange={(e) => setCompany({ ...company, city: e.target.value })} />
-              </label>
-              <label>
-                Регионы работ
-                <textarea
-                  rows={2}
-                  value={company.regions_text ?? ""}
-                  onChange={(e) => setCompany({ ...company, regions_text: e.target.value })}
-                  placeholder="Например: Москва и МО, Тверская область"
-                />
-              </label>
-              <label>
-                Описание
-                <textarea
-                  rows={4}
-                  value={company.description ?? ""}
-                  onChange={(e) => setCompany({ ...company, description: e.target.value })}
-                />
-              </label>
-              <label>
-                Типы проектов
-                <textarea
-                  rows={2}
-                  value={company.project_types ?? ""}
-                  onChange={(e) => setCompany({ ...company, project_types: e.target.value })}
-                />
-              </label>
-              <label>
-                Лет на рынке
-                <input
-                  type="number"
-                  min={0}
-                  max={200}
-                  value={company.years_on_market ?? ""}
-                  onChange={(e) =>
-                    setCompany({
-                      ...company,
-                      years_on_market: e.target.value === "" ? null : Number(e.target.value),
-                    })
+          <form onSubmit={saveCompany} className="profile-form-outer">
+            <fieldset className="form-section profile-section-card profile-section-card--full">
+              <legend className="form-section__title">Фото профиля</legend>
+              <AvatarUploadField
+                label="Логотип компании"
+                imageUrl={company.avatar_url}
+                onPickFile={async (file) => {
+                  setErr(null);
+                  try {
+                    await uploadAvatar(file);
+                    await refresh();
+                  } catch (e2) {
+                    setErr(e2 instanceof Error ? e2.message : "Ошибка загрузки");
                   }
-                />
-              </label>
+                }}
+                onRemove={async () => {
+                  setErr(null);
+                  try {
+                    await apiFetch("/api/v1/profiles/company", {
+                      method: "PATCH",
+                      body: JSON.stringify({ avatar_url: null }),
+                    });
+                    await refresh();
+                  } catch (e2) {
+                    setErr(e2 instanceof Error ? e2.message : "Ошибка");
+                  }
+                }}
+              />
             </fieldset>
+            <div className="profile-form-grid">
+              <fieldset className="form-section profile-section-card">
+                <legend className="form-section__title">Компания</legend>
+                <div className="form-stack form-stack--two-col">
+                  <label>
+                    Название *
+                    <input
+                      required
+                      value={company.company_name}
+                      onChange={(e) => setCompany({ ...company, company_name: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Город
+                    <input value={company.city ?? ""} onChange={(e) => setCompany({ ...company, city: e.target.value })} />
+                  </label>
+                  <label className="form-span-2">
+                    Регионы работ
+                    <textarea
+                      rows={2}
+                      value={company.regions_text ?? ""}
+                      onChange={(e) => setCompany({ ...company, regions_text: e.target.value })}
+                      placeholder="Например: Москва и МО, Тверская область"
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Описание
+                    <textarea
+                      rows={4}
+                      value={company.description ?? ""}
+                      onChange={(e) => setCompany({ ...company, description: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Типы проектов
+                    <textarea
+                      rows={2}
+                      value={company.project_types ?? ""}
+                      onChange={(e) => setCompany({ ...company, project_types: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Лет на рынке
+                    <input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={company.years_on_market ?? ""}
+                      onChange={(e) =>
+                        setCompany({
+                          ...company,
+                          years_on_market: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+              </fieldset>
 
-            <fieldset className="form-section">
-              <legend className="form-section__title">Контакты</legend>
-              <label>
-                Контактное лицо
-                <input
-                  value={company.contact_person ?? ""}
-                  onChange={(e) => setCompany({ ...company, contact_person: e.target.value })}
-                />
-              </label>
-              <label>
-                Телефон
-                <input value={company.phone ?? ""} onChange={(e) => setCompany({ ...company, phone: e.target.value })} />
-              </label>
-              <label>
-                Email (публичный)
-                <input
-                  type="email"
-                  value={company.email_public ?? ""}
-                  onChange={(e) => setCompany({ ...company, email_public: e.target.value })}
-                />
-              </label>
-              <label>
-                Мессенджеры
-                <textarea
-                  rows={2}
-                  value={company.messengers_text ?? ""}
-                  onChange={(e) => setCompany({ ...company, messengers_text: e.target.value })}
-                  placeholder="Telegram, WhatsApp и т.д."
-                />
-              </label>
-            </fieldset>
+              <fieldset className="form-section profile-section-card">
+                <legend className="form-section__title">Контакты</legend>
+                <div className="form-stack form-stack--two-col">
+                  <label>
+                    Контактное лицо
+                    <input
+                      value={company.contact_person ?? ""}
+                      onChange={(e) => setCompany({ ...company, contact_person: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Телефон
+                    <input value={company.phone ?? ""} onChange={(e) => setCompany({ ...company, phone: e.target.value })} />
+                  </label>
+                  <label className="form-span-2">
+                    Email (публичный)
+                    <input
+                      type="email"
+                      value={company.email_public ?? ""}
+                      onChange={(e) => setCompany({ ...company, email_public: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Мессенджеры
+                    <textarea
+                      rows={2}
+                      value={company.messengers_text ?? ""}
+                      onChange={(e) => setCompany({ ...company, messengers_text: e.target.value })}
+                      placeholder="Telegram, WhatsApp и т.д."
+                    />
+                  </label>
+                </div>
+              </fieldset>
 
-            <fieldset className="form-section">
-              <legend className="form-section__title">
-                Условия работы
-                <HelpHint title="Условия и оплата" label="Подсказка">
-                  <p>Эти поля помогают исполнителям понять масштаб заказов и способы расчёта до отклика.</p>
-                </HelpHint>
-              </legend>
-              <label>
-                Условия сотрудничества
-                <textarea
-                  rows={3}
-                  value={company.cooperation_terms ?? ""}
-                  onChange={(e) => setCompany({ ...company, cooperation_terms: e.target.value })}
-                />
-              </label>
-              <label>
-                Средний бюджет (как ориентир)
-                <input
-                  value={company.avg_budget_note ?? ""}
-                  onChange={(e) => setCompany({ ...company, avg_budget_note: e.target.value })}
-                />
-              </label>
-              <label>
-                Способы оплаты
-                <textarea
-                  rows={2}
-                  value={company.payment_methods_text ?? ""}
-                  onChange={(e) => setCompany({ ...company, payment_methods_text: e.target.value })}
-                />
-              </label>
-              <label>
-                Фото и медиа (ссылки или описание)
-                <textarea
-                  rows={2}
-                  value={company.media_note ?? ""}
-                  onChange={(e) => setCompany({ ...company, media_note: e.target.value })}
-                  placeholder="Ссылки на сайт, портфолио, альбомы"
-                />
-              </label>
-            </fieldset>
+              <fieldset className="form-section profile-section-card profile-section-card--full">
+                <legend className="form-section__title">
+                  Условия работы
+                  <HelpHint title="Условия и оплата" label="Подсказка">
+                    <p>Эти поля помогают исполнителям понять масштаб заказов и способы расчёта до отклика.</p>
+                  </HelpHint>
+                </legend>
+                <div className="form-stack form-stack--two-col">
+                  <label className="form-span-2">
+                    Условия сотрудничества
+                    <textarea
+                      rows={3}
+                      value={company.cooperation_terms ?? ""}
+                      onChange={(e) => setCompany({ ...company, cooperation_terms: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Средний бюджет (как ориентир)
+                    <input
+                      value={company.avg_budget_note ?? ""}
+                      onChange={(e) => setCompany({ ...company, avg_budget_note: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Способы оплаты
+                    <textarea
+                      rows={2}
+                      value={company.payment_methods_text ?? ""}
+                      onChange={(e) => setCompany({ ...company, payment_methods_text: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Фото и медиа (ссылки или описание)
+                    <textarea
+                      rows={2}
+                      value={company.media_note ?? ""}
+                      onChange={(e) => setCompany({ ...company, media_note: e.target.value })}
+                      placeholder="Ссылки на сайт, портфолио, альбомы"
+                    />
+                  </label>
+                </div>
+              </fieldset>
+            </div>
 
-            <p className="muted profile-rating-line">
+            <p className="muted profile-rating-line profile-form-footer-meta">
               Рейтинг: {company.rating_avg.toFixed(1)} · отзывов: {company.reviews_count}
             </p>
-            <button type="submit" className="btn btn--primary" style={{ justifySelf: "start" }}>
-              Сохранить
+            <button type="submit" className="btn btn--primary profile-form-submit">
+              Сохранить изменения
             </button>
           </form>
         ) : null}
 
         {me.role === "worker" && worker ? (
-          <form onSubmit={saveWorker} className="form-stack">
-            <fieldset className="form-section">
-              <legend className="form-section__title">О себе</legend>
-              <label>
-                ФИО *
-                <input
-                  required
-                  value={worker.full_name}
-                  onChange={(e) => setWorker({ ...worker, full_name: e.target.value })}
-                />
-              </label>
-              <label>
-                Город
-                <input value={worker.city ?? ""} onChange={(e) => setWorker({ ...worker, city: e.target.value })} />
-              </label>
-              <label>
-                Профессия
-                <input
-                  value={worker.profession ?? ""}
-                  onChange={(e) => setWorker({ ...worker, profession: e.target.value })}
-                />
-              </label>
-              <label>
-                Специализация
-                <input
-                  value={worker.specialization ?? ""}
-                  onChange={(e) => setWorker({ ...worker, specialization: e.target.value })}
-                />
-              </label>
-              <label>
-                Стаж (лет)
-                <input
-                  type="number"
-                  min={0}
-                  max={80}
-                  value={worker.experience_years ?? ""}
-                  onChange={(e) =>
-                    setWorker({
-                      ...worker,
-                      experience_years: e.target.value === "" ? null : Number(e.target.value),
-                    })
+          <form onSubmit={saveWorker} className="profile-form-outer">
+            <fieldset className="form-section profile-section-card profile-section-card--full">
+              <legend className="form-section__title">Фото профиля</legend>
+              <AvatarUploadField
+                label="Ваше фото"
+                imageUrl={worker.avatar_url}
+                onPickFile={async (file) => {
+                  setErr(null);
+                  try {
+                    await uploadAvatar(file);
+                    await refresh();
+                  } catch (e2) {
+                    setErr(e2 instanceof Error ? e2.message : "Ошибка загрузки");
                   }
-                />
-              </label>
-              <label>
-                Формат работы
-                <input
-                  value={worker.work_format ?? ""}
-                  onChange={(e) => setWorker({ ...worker, work_format: e.target.value })}
-                  placeholder="Например: полный день, вахта"
-                />
-              </label>
-              <label className="form-row-check">
-                <input
-                  type="checkbox"
-                  checked={worker.willing_to_travel}
-                  onChange={(e) => setWorker({ ...worker, willing_to_travel: e.target.checked })}
-                />
-                Готов к выездам в другие регионы
-              </label>
+                }}
+                onRemove={async () => {
+                  setErr(null);
+                  try {
+                    await apiFetch("/api/v1/profiles/worker", {
+                      method: "PATCH",
+                      body: JSON.stringify({ avatar_url: null }),
+                    });
+                    await refresh();
+                  } catch (e2) {
+                    setErr(e2 instanceof Error ? e2.message : "Ошибка");
+                  }
+                }}
+              />
             </fieldset>
+            <div className="profile-form-grid">
+              <fieldset className="form-section profile-section-card">
+                <legend className="form-section__title">О себе</legend>
+                <div className="form-stack form-stack--two-col">
+                  <label>
+                    ФИО *
+                    <input
+                      required
+                      value={worker.full_name}
+                      onChange={(e) => setWorker({ ...worker, full_name: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Город
+                    <input value={worker.city ?? ""} onChange={(e) => setWorker({ ...worker, city: e.target.value })} />
+                  </label>
+                  <label>
+                    Профессия
+                    <input
+                      value={worker.profession ?? ""}
+                      onChange={(e) => setWorker({ ...worker, profession: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Специализация
+                    <input
+                      value={worker.specialization ?? ""}
+                      onChange={(e) => setWorker({ ...worker, specialization: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Стаж (лет)
+                    <input
+                      type="number"
+                      min={0}
+                      max={80}
+                      value={worker.experience_years ?? ""}
+                      onChange={(e) =>
+                        setWorker({
+                          ...worker,
+                          experience_years: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Формат работы
+                    <input
+                      value={worker.work_format ?? ""}
+                      onChange={(e) => setWorker({ ...worker, work_format: e.target.value })}
+                      placeholder="Например: полный день, вахта"
+                    />
+                  </label>
+                  <label className="form-row-check form-span-2">
+                    <input
+                      type="checkbox"
+                      checked={worker.willing_to_travel}
+                      onChange={(e) => setWorker({ ...worker, willing_to_travel: e.target.checked })}
+                    />
+                    Готов к выездам в другие регионы
+                  </label>
+                </div>
+              </fieldset>
 
-            <fieldset className="form-section">
-              <legend className="form-section__title">Навыки и портфолио</legend>
-              <label>
-                Навыки
-                <textarea
-                  rows={3}
-                  value={worker.skills_text ?? ""}
-                  onChange={(e) => setWorker({ ...worker, skills_text: e.target.value })}
-                />
-              </label>
-              <label>
-                О себе
-                <textarea rows={4} value={worker.bio ?? ""} onChange={(e) => setWorker({ ...worker, bio: e.target.value })} />
-              </label>
-              <label>
-                Портфолио (ссылки или описание)
-                <textarea
-                  rows={2}
-                  value={worker.portfolio_note ?? ""}
-                  onChange={(e) => setWorker({ ...worker, portfolio_note: e.target.value })}
-                />
-              </label>
-              <label>
-                Документы (разряды, допуски — текстом)
-                <textarea
-                  rows={2}
-                  value={worker.documents_note ?? ""}
-                  onChange={(e) => setWorker({ ...worker, documents_note: e.target.value })}
-                />
-              </label>
-            </fieldset>
+              <fieldset className="form-section profile-section-card">
+                <legend className="form-section__title">Навыки и портфолио</legend>
+                <div className="form-stack">
+                  <label>
+                    Навыки
+                    <textarea
+                      rows={3}
+                      value={worker.skills_text ?? ""}
+                      onChange={(e) => setWorker({ ...worker, skills_text: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    О себе
+                    <textarea rows={4} value={worker.bio ?? ""} onChange={(e) => setWorker({ ...worker, bio: e.target.value })} />
+                  </label>
+                  <label>
+                    Портфолио (ссылки или описание)
+                    <textarea
+                      rows={2}
+                      value={worker.portfolio_note ?? ""}
+                      onChange={(e) => setWorker({ ...worker, portfolio_note: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Документы (разряды, допуски — текстом)
+                    <textarea
+                      rows={2}
+                      value={worker.documents_note ?? ""}
+                      onChange={(e) => setWorker({ ...worker, documents_note: e.target.value })}
+                    />
+                  </label>
+                </div>
+              </fieldset>
 
-            <fieldset className="form-section">
-              <legend className="form-section__title">Условия</legend>
-              <label>
-                Желаемая ставка / условия
-                <textarea
-                  rows={2}
-                  value={worker.desired_rate_note ?? ""}
-                  onChange={(e) => setWorker({ ...worker, desired_rate_note: e.target.value })}
-                />
-              </label>
-            </fieldset>
+              <fieldset className="form-section profile-section-card profile-section-card--full">
+                <legend className="form-section__title">Условия</legend>
+                <div className="form-stack">
+                  <label>
+                    Желаемая ставка / условия
+                    <textarea
+                      rows={2}
+                      value={worker.desired_rate_note ?? ""}
+                      onChange={(e) => setWorker({ ...worker, desired_rate_note: e.target.value })}
+                    />
+                  </label>
+                </div>
+              </fieldset>
+            </div>
 
-            <p className="muted profile-rating-line">
+            <p className="muted profile-rating-line profile-form-footer-meta">
               Рейтинг: {worker.rating_avg.toFixed(1)} · отзывов: {worker.reviews_count}
             </p>
-            <button type="submit" className="btn btn--primary" style={{ justifySelf: "start" }}>
-              Сохранить
+            <button type="submit" className="btn btn--primary profile-form-submit">
+              Сохранить изменения
             </button>
           </form>
         ) : null}
 
         {me.role === "brigade" && brigade ? (
-          <form onSubmit={saveBrigade} className="form-stack">
-            <fieldset className="form-section">
-              <legend className="form-section__title">Бригада</legend>
-              <label>
-                Название *
-                <input required value={brigade.name} onChange={(e) => setBrigade({ ...brigade, name: e.target.value })} />
-              </label>
-              <label>
-                Руководитель / контактное лицо
-                <input
-                  value={brigade.leader_name ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, leader_name: e.target.value })}
-                />
-              </label>
-              <label>
-                Численность
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={brigade.headcount}
-                  onChange={(e) => setBrigade({ ...brigade, headcount: Number(e.target.value) || 1 })}
-                />
-              </label>
-              <label>
-                Специализация
-                <input
-                  value={brigade.specialization ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, specialization: e.target.value })}
-                />
-              </label>
-              <label>
-                Состав (роли в бригаде)
-                <textarea
-                  rows={3}
-                  value={brigade.roles_composition_text ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, roles_composition_text: e.target.value })}
-                />
-              </label>
-              <label>
-                Регионы выезда
-                <textarea
-                  rows={2}
-                  value={brigade.regions_text ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, regions_text: e.target.value })}
-                />
-              </label>
+          <form onSubmit={saveBrigade} className="profile-form-outer">
+            <fieldset className="form-section profile-section-card profile-section-card--full">
+              <legend className="form-section__title">Фото профиля</legend>
+              <AvatarUploadField
+                label="Фото бригады / логотип"
+                imageUrl={brigade.avatar_url}
+                onPickFile={async (file) => {
+                  setErr(null);
+                  try {
+                    await uploadAvatar(file);
+                    await refresh();
+                  } catch (e2) {
+                    setErr(e2 instanceof Error ? e2.message : "Ошибка загрузки");
+                  }
+                }}
+                onRemove={async () => {
+                  setErr(null);
+                  try {
+                    await apiFetch("/api/v1/profiles/brigade", {
+                      method: "PATCH",
+                      body: JSON.stringify({ avatar_url: null }),
+                    });
+                    await refresh();
+                  } catch (e2) {
+                    setErr(e2 instanceof Error ? e2.message : "Ошибка");
+                  }
+                }}
+              />
             </fieldset>
+            <div className="profile-form-grid">
+              <fieldset className="form-section profile-section-card">
+                <legend className="form-section__title">Бригада</legend>
+                <div className="form-stack form-stack--two-col">
+                  <label>
+                    Название *
+                    <input required value={brigade.name} onChange={(e) => setBrigade({ ...brigade, name: e.target.value })} />
+                  </label>
+                  <label>
+                    Руководитель / контакт
+                    <input
+                      value={brigade.leader_name ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, leader_name: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Численность
+                    <input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={brigade.headcount}
+                      onChange={(e) => setBrigade({ ...brigade, headcount: Number(e.target.value) || 1 })}
+                    />
+                  </label>
+                  <label>
+                    Специализация
+                    <input
+                      value={brigade.specialization ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, specialization: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Состав (роли в бригаде)
+                    <textarea
+                      rows={3}
+                      value={brigade.roles_composition_text ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, roles_composition_text: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    Регионы выезда
+                    <textarea
+                      rows={2}
+                      value={brigade.regions_text ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, regions_text: e.target.value })}
+                    />
+                  </label>
+                </div>
+              </fieldset>
 
-            <fieldset className="form-section">
-              <legend className="form-section__title">Опыт и ресурсы</legend>
-              <label>
-                Прошлые объекты (кратко)
-                <textarea
-                  rows={3}
-                  value={brigade.past_objects_note ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, past_objects_note: e.target.value })}
-                />
-              </label>
-              <label className="form-row-check">
-                <input
-                  type="checkbox"
-                  checked={brigade.has_tools}
-                  onChange={(e) => setBrigade({ ...brigade, has_tools: e.target.checked })}
-                />
-                Свой инструмент
-              </label>
-              <label className="form-row-check">
-                <input
-                  type="checkbox"
-                  checked={brigade.has_transport}
-                  onChange={(e) => setBrigade({ ...brigade, has_transport: e.target.checked })}
-                />
-                Свой транспорт
-              </label>
-            </fieldset>
+              <fieldset className="form-section profile-section-card">
+                <legend className="form-section__title">Опыт и ресурсы</legend>
+                <div className="form-stack">
+                  <label>
+                    Прошлые объекты (кратко)
+                    <textarea
+                      rows={3}
+                      value={brigade.past_objects_note ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, past_objects_note: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-row-check">
+                    <input
+                      type="checkbox"
+                      checked={brigade.has_tools}
+                      onChange={(e) => setBrigade({ ...brigade, has_tools: e.target.checked })}
+                    />
+                    Свой инструмент
+                  </label>
+                  <label className="form-row-check">
+                    <input
+                      type="checkbox"
+                      checked={brigade.has_transport}
+                      onChange={(e) => setBrigade({ ...brigade, has_transport: e.target.checked })}
+                    />
+                    Свой транспорт
+                  </label>
+                </div>
+              </fieldset>
 
-            <fieldset className="form-section">
-              <legend className="form-section__title">Коммерция и доступность</legend>
-              <label>
-                Средняя цена / вилка
-                <textarea
-                  rows={2}
-                  value={brigade.avg_price_note ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, avg_price_note: e.target.value })}
-                />
-              </label>
-              <label>
-                Доступность (график, сроки выхода)
-                <textarea
-                  rows={2}
-                  value={brigade.availability_note ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, availability_note: e.target.value })}
-                />
-              </label>
-              <label>
-                О бригаде
-                <textarea rows={3} value={brigade.bio ?? ""} onChange={(e) => setBrigade({ ...brigade, bio: e.target.value })} />
-              </label>
-              <label>
-                Портфолио
-                <textarea
-                  rows={2}
-                  value={brigade.portfolio_note ?? ""}
-                  onChange={(e) => setBrigade({ ...brigade, portfolio_note: e.target.value })}
-                />
-              </label>
-            </fieldset>
+              <fieldset className="form-section profile-section-card profile-section-card--full">
+                <legend className="form-section__title">Коммерция и доступность</legend>
+                <div className="form-stack form-stack--two-col">
+                  <label>
+                    Средняя цена / вилка
+                    <textarea
+                      rows={2}
+                      value={brigade.avg_price_note ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, avg_price_note: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Доступность (график, сроки)
+                    <textarea
+                      rows={2}
+                      value={brigade.availability_note ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, availability_note: e.target.value })}
+                    />
+                  </label>
+                  <label className="form-span-2">
+                    О бригаде
+                    <textarea rows={3} value={brigade.bio ?? ""} onChange={(e) => setBrigade({ ...brigade, bio: e.target.value })} />
+                  </label>
+                  <label className="form-span-2">
+                    Портфолио
+                    <textarea
+                      rows={2}
+                      value={brigade.portfolio_note ?? ""}
+                      onChange={(e) => setBrigade({ ...brigade, portfolio_note: e.target.value })}
+                    />
+                  </label>
+                </div>
+              </fieldset>
+            </div>
 
-            <p className="muted profile-rating-line">
+            <p className="muted profile-rating-line profile-form-footer-meta">
               Рейтинг: {brigade.rating_avg.toFixed(1)} · отзывов: {brigade.reviews_count}
             </p>
-            <button type="submit" className="btn btn--primary" style={{ justifySelf: "start" }}>
-              Сохранить
+            <button type="submit" className="btn btn--primary profile-form-submit">
+              Сохранить изменения
             </button>
           </form>
         ) : null}

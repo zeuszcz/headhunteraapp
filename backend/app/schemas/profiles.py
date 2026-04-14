@@ -22,6 +22,7 @@ class CompanyProfileRead(BaseModel):
     avg_budget_note: str | None
     payment_methods_text: str | None
     media_note: str | None
+    avatar_url: str | None
     rating_avg: float
     reviews_count: int
     created_at: datetime
@@ -43,6 +44,7 @@ class CompanyProfileUpdate(BaseModel):
     avg_budget_note: str | None = None
     payment_methods_text: str | None = None
     media_note: str | None = None
+    avatar_url: str | None = None
 
 
 class WorkerProfileRead(BaseModel):
@@ -61,6 +63,7 @@ class WorkerProfileRead(BaseModel):
     bio: str | None
     documents_note: str | None
     portfolio_note: str | None
+    avatar_url: str | None
     rating_avg: float
     reviews_count: int
     created_at: datetime
@@ -80,6 +83,7 @@ class WorkerProfileUpdate(BaseModel):
     bio: str | None = None
     documents_note: str | None = None
     portfolio_note: str | None = None
+    avatar_url: str | None = None
 
 
 class BrigadeProfileRead(BaseModel):
@@ -99,6 +103,7 @@ class BrigadeProfileRead(BaseModel):
     availability_note: str | None
     bio: str | None
     portfolio_note: str | None
+    avatar_url: str | None
     rating_avg: float
     reviews_count: int
     created_at: datetime
@@ -119,3 +124,4 @@ class BrigadeProfileUpdate(BaseModel):
     availability_note: str | None = None
     bio: str | None = None
     portfolio_note: str | None = None
+    avatar_url: str | None = None

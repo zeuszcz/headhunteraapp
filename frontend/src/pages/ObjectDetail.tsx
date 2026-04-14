@@ -243,7 +243,11 @@ export function ObjectDetail() {
           {obj.company_name || obj.company_city ? (
             <div className="object-detail__company-row">
               <div className="object-detail__company-main">
-                <IconBuilding className="object-detail__company-icon" />
+                {obj.company_avatar_url ? (
+                  <img src={obj.company_avatar_url} alt="" className="object-detail__company-avatar-img" />
+                ) : (
+                  <IconBuilding className="object-detail__company-icon" />
+                )}
                 <div>
                   <div className="object-detail__company-name">{obj.company_name ?? "Компания"}</div>
                   {obj.company_city ? <div className="object-detail__company-city muted">{obj.company_city}</div> : null}

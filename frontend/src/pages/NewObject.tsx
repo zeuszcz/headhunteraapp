@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { uploadObjectCover } from "../api/uploads";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { HelpHint } from "../components/HelpHint";
@@ -11,6 +12,7 @@ export function NewObject() {
   const { me } = useAuth();
   const nav = useNavigate();
   const [err, setErr] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   if (me?.role !== "company") {
     return (
@@ -36,7 +38,7 @@ export function NewObject() {
           payment_format: payload.payment_format,
           urgency: payload.urgency,
           contact_override: payload.contact_override,
-          cover_image_url: payload.cover_image_url,
+          cover_image_url: coverFile ? null : payload.cover_image_url,
           start_date: payload.start_date,
           duration_days: payload.duration_days,
           workers_needed: payload.workers_needed,
@@ -44,6 +46,9 @@ export function NewObject() {
           status: payload.status,
         }),
       });
+      if (coverFile) {
+        await uploadObjectCover(o.id, coverFile);
+      }
       nav(`/objects/${o.id}`);
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : "Ошибка");
@@ -83,6 +88,7 @@ export function NewObject() {
         onSubmit={handleSubmit}
         submitLabel="Сохранить"
         error={err}
+        onCoverFileChange={setCoverFile}
       />
     </PageLayout>
   );

@@ -174,97 +174,101 @@ export function Feed() {
   return (
     <PageLayout
       title="Объекты и задачи"
-      subtitle="Фильтры, сохранённые фильтры в браузере, сортировка по дате, страницы по 12 карточек."
+      subtitle="Лента карточек: фильтры и сортировка ниже, по 12 на странице."
       breadcrumbs={[
         { to: "/", label: "Главная" },
         { to: "/feed", label: "Объекты" },
       ]}
       sidebar={sidebar}
     >
-      <div className="card filters-panel filters-panel--wide">
-        <div className="title-with-hint" style={{ gridColumn: "1 / -1" }}>
-          <span>Фильтры</span>
-          <HelpHint title="Как устроены фильтры" label="Подсказка по фильтрам">
-            <p>Все поля необязательны: можно искать только по городу или только по ключевым словам.</p>
-            <p>Нажмите «Применить», чтобы перезапросить список с сервера.</p>
-          </HelpHint>
-        </div>
-        <input
-          placeholder="Город / регион"
-          value={draftCity}
-          onChange={(e) => setDraftCity(e.target.value)}
-          aria-label="Город"
-        />
-        <input
-          placeholder="Поиск (название, описание, навыки)"
-          value={draftQ}
-          onChange={(e) => setDraftQ(e.target.value)}
-          aria-label="Поиск"
-        />
-        <input
-          placeholder="Оплата (подстрока)"
-          value={draftPayment}
-          onChange={(e) => setDraftPayment(e.target.value)}
-          aria-label="Оплата"
-        />
-        <button type="button" className="btn btn--primary" style={{ justifySelf: "start" }} onClick={applyFilters}>
-          Применить фильтры
-        </button>
-      </div>
-
-      <div className="card feed-toolbar">
-        <label className="feed-toolbar__sort">
-          <span className="muted" style={{ fontSize: "0.88rem", marginRight: "0.5rem" }}>
-            Сортировка
-          </span>
-          <select
-            value={sortParam}
-            onChange={(e) => setSort(e.target.value === "old" ? "old" : "new")}
-            aria-label="Сортировка по дате"
-          >
-            <option value="new">Сначала новые</option>
-            <option value="old">Сначала старые</option>
-          </select>
-        </label>
-        <div className="feed-presets">
-          <span className="muted" style={{ fontSize: "0.88rem" }}>
-            Сохранённые фильтры (в этом браузере):
-          </span>
-          <div className="feed-presets__row">
+      <div className="feed-controls card">
+        <div className="feed-controls__main">
+          <div className="feed-controls__fields">
             <input
-              placeholder="Название набора"
-              value={presetName}
-              onChange={(e) => setPresetName(e.target.value)}
-              aria-label="Название сохранённого фильтра"
+              className="feed-controls__input"
+              placeholder="Город / регион"
+              value={draftCity}
+              onChange={(e) => setDraftCity(e.target.value)}
+              aria-label="Город"
             />
-            <button type="button" className="btn btn--secondary btn--sm" onClick={onSavePreset}>
-              Сохранить текущие поля
-            </button>
+            <input
+              className="feed-controls__input"
+              placeholder="Поиск: название, описание, навыки"
+              value={draftQ}
+              onChange={(e) => setDraftQ(e.target.value)}
+              aria-label="Поиск"
+            />
+            <input
+              className="feed-controls__input"
+              placeholder="Оплата (подстрока)"
+              value={draftPayment}
+              onChange={(e) => setDraftPayment(e.target.value)}
+              aria-label="Оплата"
+            />
           </div>
-          {presets.length > 0 ? (
-            <ul className="feed-presets__list">
-              {presets.map((p) => (
-                <li key={p.id}>
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => applyPreset(p)}>
-                    {p.name}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--sm feed-presets__remove"
-                    onClick={() => onRemovePreset(p.id)}
-                    aria-label={`Удалить ${p.name}`}
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.88rem" }}>
-              Пока нет — задайте поля вручную и нажмите «Сохранить текущие поля».
-            </p>
-          )}
+          <div className="feed-controls__actions">
+            <label className="feed-controls__sort">
+              <span className="feed-controls__sort-label">Порядок</span>
+              <select
+                className="input-select input-select--sm"
+                value={sortParam}
+                onChange={(e) => setSort(e.target.value === "old" ? "old" : "new")}
+                aria-label="Сортировка по дате"
+              >
+                <option value="new">Сначала новые</option>
+                <option value="old">Сначала старые</option>
+              </select>
+            </label>
+            <button type="button" className="btn btn--primary btn--sm" onClick={applyFilters}>
+              Применить
+            </button>
+            <span className="title-with-hint feed-controls__hint">
+              <HelpHint title="Как устроены фильтры" label="Фильтры">
+                <p>Все поля необязательны. «Применить» отправляет запрос с учётом сортировки.</p>
+              </HelpHint>
+            </span>
+          </div>
         </div>
+        <details className="feed-presets-details">
+          <summary className="feed-presets-details__summary">
+            Сохранённые фильтры
+            {presets.length > 0 ? <span className="feed-presets-details__count">{presets.length}</span> : null}
+          </summary>
+          <div className="feed-presets-details__body">
+            <div className="feed-presets__row">
+              <input
+                placeholder="Название набора"
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                aria-label="Название сохранённого фильтра"
+              />
+              <button type="button" className="btn btn--secondary btn--sm" onClick={onSavePreset}>
+                Сохранить набор
+              </button>
+            </div>
+            {presets.length > 0 ? (
+              <ul className="feed-presets__list">
+                {presets.map((p) => (
+                  <li key={p.id}>
+                    <button type="button" className="btn btn--ghost btn--sm" onClick={() => applyPreset(p)}>
+                      {p.name}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--sm feed-presets__remove"
+                      onClick={() => onRemovePreset(p.id)}
+                      aria-label={`Удалить ${p.name}`}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted feed-presets-details__empty">Нет сохранённых — задайте поля выше и нажмите «Сохранить набор».</p>
+            )}
+          </div>
+        </details>
       </div>
 
       {err ? (

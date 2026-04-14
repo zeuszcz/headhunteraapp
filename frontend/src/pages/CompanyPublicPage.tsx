@@ -87,6 +87,12 @@ export function CompanyPublicPage() {
             Рейтинг: {profile.rating_avg.toFixed(1)} · отзывов: {profile.reviews_count}
           </p>
 
+          {profile.avatar_url ? (
+            <div className="public-profile-avatar">
+              <img src={profile.avatar_url} alt="" />
+            </div>
+          ) : null}
+
           {profile.description ? (
             <section className="object-detail__block">
               <h2 className="object-detail__block-title">

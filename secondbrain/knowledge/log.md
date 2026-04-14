@@ -27,3 +27,11 @@
 ## [2026-04-13] ingest | UI/UX фазы 3–4: GET /notifications/unread-count; GET /objects sort=new|old; /help, /onboarding (после регистрации), /u/company/:userId, catch-all 404; Feed — сохранённые фильтры localStorage, сортировка; бейдж непрочитанных в навбаре; ссылка «Профиль компании» на объекте; ThemeProvider + тёмная тема в настройках; MobileBottomNav ≤900px; аналитика компании — KPI-сетка и полоса pending; ThemeProvider в тестах.
 
 ## [2026-04-14] ingest | Чаты: `ConversationRead` дополнен полями `work_object_title`, `peer_display_name`, `peer_role` (батч в `services/conversation_list.py`); `GET /chat/conversations` и `POST /chat/conversations` отдают обогащённые записи; добавлен `GET /chat/conversations/{id}` для шапки комнаты; UI списка чатов и `ChatRoom` показывают название объекта и собеседника.
+
+## [2026-04-14] ingest | UI: лента — компактная панель `feed-controls` + сортировка в одной строке, пресеты в `<details>`; каталог `/talent` — `input-select`, кнопка «Новый объект», общий `talent-toolbar`; профиль — сетка карточек `profile-form-grid` и двухколоночные поля (`form-stack--two-col`).
+
+## [2026-04-14] ingest | Загрузка изображений: миграция `005` — `avatar_url` в профилях компании/работника/бригады; `POST /uploads/avatar`, `POST /uploads/objects/{id}/cover`; раздача `StaticFiles` на `/api/v1/files`; лимит 2 МБ, JPEG/PNG/WebP; лента с `company_avatar_url` в `WorkObjectRead`.
+
+## [2026-04-14] ingest | Лента: карточки объектов шире (`feed-grid` — `auto-fill`/`minmax(380px)`), блок компании с подписью и иконками, строки «Регион объекта» / «Вид работ» / «Оплата» с `ObjectDetailIcons` в `FeedObjectCard`.
+
+## [2026-04-14] ingest | Кабинет компании (`/dashboard`): список объектов — сетка как в ленте, `DashboardObjectCard` с обложкой, русскими статусами (бейдж), регион/вид работ/оплата/срок/потребность/срочность, дата создания, кнопки «Открыть»/«Изменить`; хелперы `workObjectLabels.ts`.

@@ -44,7 +44,7 @@ async def list_objects(
 ) -> WorkObjectListResponse:
     sort_key = sort if sort in ("new", "old") else "new"
     stmt = (
-        select(WorkObject, CompanyProfile.company_name, CompanyProfile.city)
+        select(WorkObject, CompanyProfile.company_name, CompanyProfile.city, CompanyProfile.avatar_url)
         .outerjoin(CompanyProfile, WorkObject.company_user_id == CompanyProfile.user_id)
     )
     conds = []
@@ -88,9 +88,17 @@ async def list_objects(
     stmt = stmt.order_by(order).offset(offset).limit(limit)
     result = await session.execute(stmt)
     out: list[WorkObjectRead] = []
-    for wo, cn, cc in result.all():
+    for wo, cn, cc, cav in result.all():
         r = WorkObjectRead.model_validate(wo)
-        out.append(r.model_copy(update={"company_name": cn, "company_city": cc}))
+        out.append(
+            r.model_copy(
+                update={
+                    "company_name": cn,
+                    "company_city": cc,
+                    "company_avatar_url": cav,
+                }
+            )
+        )
     return WorkObjectListResponse(items=out, total=total)
 
 

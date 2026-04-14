@@ -1,22 +1,17 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import api_router
 from app.config import get_settings
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    yield
-
-
 def create_app() -> FastAPI:
     settings = get_settings()
+    # StaticFiles проверяет каталог при инициализации приложения.
+    settings.upload_root.mkdir(parents=True, exist_ok=True)
     app = FastAPI(
         title=settings.app_name,
-        lifespan=lifespan,
     )
     app.add_middleware(
         CORSMiddleware,
@@ -31,6 +26,11 @@ def create_app() -> FastAPI:
         return {"status": "ok", "service": settings.app_name}
 
     app.include_router(api_router, prefix=f"{settings.api_prefix}/v1")
+    app.mount(
+        f"{settings.api_prefix}/v1/files",
+        StaticFiles(directory=str(settings.upload_root)),
+        name="uploaded_files",
+    )
     return app
 
 

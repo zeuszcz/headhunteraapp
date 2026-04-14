@@ -93,6 +93,12 @@ export function WorkerPublicPage() {
             Рейтинг: {profile.rating_avg.toFixed(1)} · отзывов: {profile.reviews_count}
           </p>
 
+          {profile.avatar_url ? (
+            <div className="public-profile-avatar">
+              <img src={profile.avatar_url} alt="" />
+            </div>
+          ) : null}
+
           <div className="object-detail__chips" role="list">
             {profile.city ? (
               <span className="object-detail__chip" role="listitem">

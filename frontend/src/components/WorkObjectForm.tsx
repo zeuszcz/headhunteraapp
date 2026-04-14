@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { uploadObjectCover } from "../api/uploads";
+import { useToast } from "../context/ToastContext";
 import { HelpHint } from "./HelpHint";
 
 export type WorkObjectFormPayload = {
@@ -26,9 +28,22 @@ type Props = {
   onSubmit: (payload: WorkObjectFormPayload) => Promise<void>;
   submitLabel: string;
   error: string | null;
+  /** В режиме редактирования — загрузка обложки сразу на сервер */
+  objectId?: string;
+  /** При создании объекта — файл обложки после сохранения карточки */
+  onCoverFileChange?: (file: File | null) => void;
 };
 
-export function WorkObjectForm({ mode, defaultValues, onSubmit, submitLabel, error }: Props) {
+export function WorkObjectForm({
+  mode,
+  defaultValues,
+  onSubmit,
+  submitLabel,
+  error,
+  objectId,
+  onCoverFileChange,
+}: Props) {
+  const toast = useToast();
   const [title, setTitle] = useState(defaultValues.title ?? "");
   const [address, setAddress] = useState(defaultValues.address_or_region ?? "");
   const [description, setDescription] = useState(defaultValues.description ?? "");
@@ -49,6 +64,16 @@ export function WorkObjectForm({ mode, defaultValues, onSubmit, submitLabel, err
   const [status, setStatus] = useState(
     defaultValues.status ?? (mode === "create" ? "open" : "open"),
   );
+  const [coverBusy, setCoverBusy] = useState(false);
+  const [localCoverPreview, setLocalCoverPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (localCoverPreview) {
+        URL.revokeObjectURL(localCoverPreview);
+      }
+    };
+  }, [localCoverPreview]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,15 +119,93 @@ export function WorkObjectForm({ mode, defaultValues, onSubmit, submitLabel, err
             Вид работ
             <input value={workType} onChange={(e) => setWorkType(e.target.value)} />
           </label>
-          <label>
-            Обложка (URL изображения)
-            <input
-              type="url"
-              placeholder="https://…"
-              value={coverImageUrl}
-              onChange={(e) => setCoverImageUrl(e.target.value)}
-            />
-          </label>
+          <div className="object-cover-upload">
+            <div style={{ fontWeight: 600, fontSize: "0.9rem", marginBottom: "0.25rem" }}>Обложка карточки</div>
+            <p className="muted" style={{ margin: "0.25rem 0 0.5rem", fontSize: "0.85rem" }}>
+              Загрузите файл (JPEG, PNG, WebP до 2 МБ) или укажите ссылку на картинку.
+            </p>
+            <div className="flex-gap" style={{ flexWrap: "wrap", alignItems: "center" }}>
+              <label className="btn btn--secondary btn--sm" style={{ cursor: coverBusy ? "wait" : "pointer" }}>
+                {coverBusy ? "Загрузка…" : "Выбрать файл"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="avatar-upload__file-input"
+                  disabled={coverBusy}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!f) return;
+                    if (f.size > 2 * 1024 * 1024) {
+                      toast.show("Файл больше 2 МБ");
+                      return;
+                    }
+                    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+                      toast.show("Нужен JPEG, PNG или WebP");
+                      return;
+                    }
+                    if (objectId) {
+                      setCoverBusy(true);
+                      void uploadObjectCover(objectId, f)
+                        .then((url) => {
+                          setCoverImageUrl(url);
+                          setLocalCoverPreview(null);
+                          toast.show("Обложка загружена");
+                        })
+                        .catch(() => toast.show("Не удалось загрузить обложку"))
+                        .finally(() => setCoverBusy(false));
+                    } else {
+                      if (localCoverPreview) {
+                        URL.revokeObjectURL(localCoverPreview);
+                      }
+                      setLocalCoverPreview(URL.createObjectURL(f));
+                      onCoverFileChange?.(f);
+                    }
+                  }}
+                />
+              </label>
+              {(coverImageUrl || localCoverPreview) && (
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  disabled={coverBusy}
+                  onClick={() => {
+                    setCoverImageUrl("");
+                    if (localCoverPreview) {
+                      URL.revokeObjectURL(localCoverPreview);
+                      setLocalCoverPreview(null);
+                    }
+                    onCoverFileChange?.(null);
+                  }}
+                >
+                  Сбросить
+                </button>
+              )}
+            </div>
+            {(coverImageUrl || localCoverPreview) && (
+              <img
+                src={localCoverPreview || coverImageUrl}
+                alt=""
+                className="object-cover-upload__preview"
+              />
+            )}
+            <label style={{ marginTop: "0.65rem" }}>
+              Или URL изображения
+              <input
+                type="url"
+                placeholder="https://…"
+                value={coverImageUrl}
+                onChange={(e) => {
+                  setCoverImageUrl(e.target.value);
+                  if (localCoverPreview) {
+                    URL.revokeObjectURL(localCoverPreview);
+                    setLocalCoverPreview(null);
+                  }
+                  onCoverFileChange?.(null);
+                }}
+              />
+            </label>
+          </div>
         </fieldset>
 
         <fieldset className="form-section">

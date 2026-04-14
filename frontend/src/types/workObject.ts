@@ -23,4 +23,5 @@ export type WorkObject = {
   updated_at: string;
   company_name: string | null;
   company_city: string | null;
+  company_avatar_url?: string | null;
 };

@@ -18,7 +18,11 @@ export function WorkerCard({ worker: w, actions }: Props) {
     <article className="talent-card card">
       <div className="talent-card__head">
         <div className="talent-card__avatar" aria-hidden>
-          {initials(w.full_name)}
+          {w.avatar_url ? (
+            <img src={w.avatar_url} alt="" className="talent-card__avatar-img" />
+          ) : (
+            initials(w.full_name)
+          )}
         </div>
         <div className="talent-card__head-text">
           <div className="talent-card__title">

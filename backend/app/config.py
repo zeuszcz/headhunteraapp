@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7
 
+    upload_root: Path = _BACKEND_DIR / "data" / "uploads"
+    max_upload_bytes: int = 2 * 1024 * 1024
+
 
 @lru_cache
 def get_settings() -> Settings:

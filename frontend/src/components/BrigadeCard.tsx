@@ -12,7 +12,11 @@ export function BrigadeCard({ brigade: b, actions }: Props) {
     <article className="talent-card card">
       <div className="talent-card__head">
         <div className="talent-card__avatar talent-card__avatar--brigade" aria-hidden>
-          {b.name.slice(0, 2).toUpperCase()}
+          {b.avatar_url ? (
+            <img src={b.avatar_url} alt="" className="talent-card__avatar-img" />
+          ) : (
+            b.name.slice(0, 2).toUpperCase()
+          )}
         </div>
         <div className="talent-card__head-text">
           <div className="talent-card__title">
