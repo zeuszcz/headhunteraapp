@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { PageLayout } from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
 
 export function SettingsPage() {
   const { me, logout } = useAuth();
   const toast = useToast();
+  const { theme, setTheme } = useTheme();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export function SettingsPage() {
   return (
     <PageLayout
       title="Настройки аккаунта"
-      subtitle="Пароль и выход из приложения."
+      subtitle="Оформление, пароль и выход из приложения."
       breadcrumbs={[
         { to: "/", label: "Главная" },
         { to: "/dashboard", label: "Кабинет" },
@@ -54,6 +56,30 @@ export function SettingsPage() {
         </p>
 
         <h2 className="section-title" style={{ fontSize: "1.05rem", marginTop: 0 }}>
+          Оформление
+        </h2>
+        <div className="form-row-check" style={{ marginBottom: "1.25rem" }}>
+          <label>
+            <input
+              type="radio"
+              name="theme"
+              checked={theme === "light"}
+              onChange={() => setTheme("light")}
+            />
+            Светлая тема
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="theme"
+              checked={theme === "dark"}
+              onChange={() => setTheme("dark")}
+            />
+            Тёмная тема
+          </label>
+        </div>
+
+        <h2 className="section-title" style={{ fontSize: "1.05rem" }}>
           Смена пароля
         </h2>
         {err ? <p className="form-error">{err}</p> : null}

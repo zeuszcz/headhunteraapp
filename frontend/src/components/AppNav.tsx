@@ -4,7 +4,11 @@ import { useAuth } from "../context/AuthContext";
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `app-nav__link${isActive ? " app-nav__link--active" : ""}`;
 
-export function AppNav() {
+type AppNavProps = {
+  unreadCount?: number;
+};
+
+export function AppNav({ unreadCount = 0 }: AppNavProps) {
   const { me, logout } = useAuth();
 
   return (
@@ -37,7 +41,14 @@ export function AppNav() {
               Чаты
             </NavLink>
             <NavLink to="/notifications" className={linkClass}>
-              Уведомления
+              <span className="app-nav__link-inner">
+                Уведомления
+                {unreadCount > 0 ? (
+                  <span className="app-nav__badge" aria-label={`Не прочитано: ${unreadCount}`}>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                ) : null}
+              </span>
             </NavLink>
           </div>
 
@@ -67,6 +78,9 @@ export function AppNav() {
         <>
           <NavLink to="/feed" className={linkClass}>
             Объекты
+          </NavLink>
+          <NavLink to="/help" className={linkClass}>
+            Помощь
           </NavLink>
           <span className="app-nav__spacer" aria-hidden />
           <NavLink to="/login" className={linkClass}>

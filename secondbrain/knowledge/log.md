@@ -23,3 +23,5 @@
 ## [2026-04-13] ingest | UI: полные профили (ProfilePage + types/profiles.ts), объекты с company_name/company_city и cover_image_url (миграция 004, work_object_read, FeedObjectCard, NewObject/ObjectDetail), WorkerCard/BrigadeCard + Shortlist, редизайн Plus Jakarta Sans и токены; вики: concepts/frontend-profiles-work-objects-talent-ui.md + index.
 
 ## [2026-04-13] ingest | UI/UX фазы 1–2: GET /objects возвращает {items,total} с offset/limit; Feed — сетка, Pagination, query page+фильтры; палитра stone+indigo в :root; WorkObjectForm + EditObject (/objects/:id/edit); Settings (/settings) + PATCH /auth/me/password; ToastProvider; Protected skeleton на всю ширину; Modal Tab-focus trap; Breadcrumbs с опциональным to.
+
+## [2026-04-13] ingest | UI/UX фазы 3–4: GET /notifications/unread-count; GET /objects sort=new|old; /help, /onboarding (после регистрации), /u/company/:userId, catch-all 404; Feed — сохранённые фильтры localStorage, сортировка; бейдж непрочитанных в навбаре; ссылка «Профиль компании» на объекте; ThemeProvider + тёмная тема в настройках; MobileBottomNav ≤900px; аналитика компании — KPI-сетка и полоса pending; ThemeProvider в тестах.

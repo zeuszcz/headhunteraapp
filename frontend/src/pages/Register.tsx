@@ -18,7 +18,7 @@ export function Register() {
     setErr(null);
     try {
       await register(email, password, role);
-      nav("/profile");
+      nav("/onboarding");
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : "Ошибка");
     } finally {

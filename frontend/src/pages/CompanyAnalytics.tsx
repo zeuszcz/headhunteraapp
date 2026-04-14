@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../api/http";
 import { HelpHint } from "../components/HelpHint";
@@ -31,6 +31,11 @@ export function CompanyAnalytics() {
     if (me?.role === "company") void load();
   }, [me?.role, load]);
 
+  const pendingRatio = useMemo(() => {
+    if (!data || data.responses_total <= 0) return 0;
+    return Math.round((data.responses_pending / data.responses_total) * 100);
+  }, [data]);
+
   if (me?.role !== "company") {
     return (
       <div className="card">
@@ -53,13 +58,18 @@ export function CompanyAnalytics() {
           <p>«Ожидают решения» — отклики в статусе ожидания вашего ответа.</p>
         </HelpHint>
       </p>
+      <p style={{ marginTop: "1rem" }}>
+        <Link to="/talent">Каталог исполнителей</Link>
+        {" · "}
+        <Link to="/shortlist">Избранное</Link>
+      </p>
     </>
   );
 
   return (
     <PageLayout
       title="Аналитика компании"
-      subtitle="Краткая сводка по объектам и откликам."
+      subtitle="Сводка по объектам и откликам, доля ожидающих решения и быстрые ссылки."
       breadcrumbs={[
         { to: "/", label: "Главная" },
         { to: "/analytics/company", label: "Аналитика" },
@@ -68,22 +78,60 @@ export function CompanyAnalytics() {
     >
       {err ? <p className="form-error">{err}</p> : null}
       {data ? (
-        <div className="card stack-gap">
-          <div>
-            <strong>Объектов всего:</strong> {data.objects_total}
+        <>
+          <div className="analytics-kpi-grid">
+            <article className="analytics-kpi card">
+              <p className="analytics-kpi__label">Объектов всего</p>
+              <p className="analytics-kpi__value">{data.objects_total}</p>
+              <p className="analytics-kpi__hint muted">Все карточки в кабинете</p>
+            </article>
+            <article className="analytics-kpi card">
+              <p className="analytics-kpi__label">Активных</p>
+              <p className="analytics-kpi__value">{data.objects_open}</p>
+              <p className="analytics-kpi__hint muted">Open / in progress</p>
+            </article>
+            <article className="analytics-kpi card">
+              <p className="analytics-kpi__label">Откликов всего</p>
+              <p className="analytics-kpi__value">{data.responses_total}</p>
+              <p className="analytics-kpi__hint muted">По вашим объектам</p>
+            </article>
+            <article className="analytics-kpi card analytics-kpi--accent">
+              <p className="analytics-kpi__label">Ожидают решения</p>
+              <p className="analytics-kpi__value">{data.responses_pending}</p>
+              <p className="analytics-kpi__hint muted">Статус pending</p>
+            </article>
           </div>
-          <div>
-            <strong>Активных (open / in progress):</strong> {data.objects_open}
+
+          <div className="card analytics-bar-block">
+            <h2 className="section-title" style={{ marginTop: 0 }}>
+              Доля откликов без решения
+            </h2>
+            <p className="muted" style={{ marginTop: 0, fontSize: "0.92rem" }}>
+              {data.responses_total === 0
+                ? "Пока нет откликов — после первых откликов здесь появится полоса."
+                : `${pendingRatio}% от всех откликов ещё в ожидании вашего ответа.`}
+            </p>
+            <div className="analytics-bar" role="progressbar" aria-valuenow={pendingRatio} aria-valuemin={0} aria-valuemax={100}>
+              <div className="analytics-bar__fill" style={{ width: `${data.responses_total === 0 ? 0 : pendingRatio}%` }} />
+            </div>
           </div>
-          <div>
-            <strong>Откликов всего:</strong> {data.responses_total}
+
+          <div className="analytics-actions card">
+            <h2 className="section-title" style={{ marginTop: 0 }}>
+              Дальше
+            </h2>
+            <div className="flex-gap">
+              <Link to="/dashboard" className="btn btn--secondary">
+                Кабинет
+              </Link>
+              <Link to="/objects/new" className="btn btn--primary">
+                Новый объект
+              </Link>
+            </div>
           </div>
-          <div>
-            <strong>Ожидают решения:</strong> {data.responses_pending}
-          </div>
-        </div>
+        </>
       ) : (
-        <div className="card" style={{ maxWidth: 400 }}>
+        <div className="card" style={{ maxWidth: 480 }}>
           <div className="skeleton-screen" aria-busy="true">
             <div className="skeleton-line skeleton-line--title" />
             <div className="skeleton-line" />

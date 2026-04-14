@@ -15,7 +15,13 @@ import { NewObject } from "./pages/NewObject";
 import { ObjectDetail } from "./pages/ObjectDetail";
 import { ProfilePage } from "./pages/ProfilePage";
 import { Register } from "./pages/Register";
+import { BrigadePublicPage } from "./pages/BrigadePublicPage";
+import { CompanyPublicPage } from "./pages/CompanyPublicPage";
+import { WorkerPublicPage } from "./pages/WorkerPublicPage";
 import { EditObject } from "./pages/EditObject";
+import { HelpPage } from "./pages/HelpPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ShortlistPage } from "./pages/ShortlistPage";
 
@@ -45,6 +51,10 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/feed" element={<Feed />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/u/company/:userId" element={<CompanyPublicPage />} />
+        <Route path="/u/worker/:userId" element={<WorkerPublicPage />} />
+        <Route path="/u/brigade/:userId" element={<BrigadePublicPage />} />
         <Route
           path="/objects/:id/edit"
           element={
@@ -77,6 +87,14 @@ export default function App() {
           element={
             <Protected>
               <SettingsPage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <Protected>
+              <OnboardingPage />
             </Protected>
           }
         />
@@ -136,6 +154,7 @@ export default function App() {
             </Protected>
           }
         />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

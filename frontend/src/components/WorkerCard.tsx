@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import type { WorkerProfile } from "../types/profiles";
 
 type Props = {
@@ -20,7 +21,11 @@ export function WorkerCard({ worker: w, actions }: Props) {
           {initials(w.full_name)}
         </div>
         <div className="talent-card__head-text">
-          <div className="talent-card__title">{w.full_name}</div>
+          <div className="talent-card__title">
+            <Link to={`/u/worker/${w.user_id}`} className="talent-card__title-link">
+              {w.full_name}
+            </Link>
+          </div>
           <div className="talent-card__subtitle">
             {[w.profession, w.specialization].filter(Boolean).join(" · ") || "Профессия не указана"}
           </div>

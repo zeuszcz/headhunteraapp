@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import type { BrigadeProfile } from "../types/profiles";
 
 type Props = {
@@ -14,7 +15,11 @@ export function BrigadeCard({ brigade: b, actions }: Props) {
           {b.name.slice(0, 2).toUpperCase()}
         </div>
         <div className="talent-card__head-text">
-          <div className="talent-card__title">{b.name}</div>
+          <div className="talent-card__title">
+            <Link to={`/u/brigade/${b.user_id}`} className="talent-card__title-link">
+              {b.name}
+            </Link>
+          </div>
           <div className="talent-card__subtitle">
             {b.specialization || "Специализация не указана"} · {b.headcount} чел.
           </div>

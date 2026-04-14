@@ -1,8 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import { DetailFactRow } from "../components/DetailFactRow";
 import { EmptyState } from "../components/EmptyState";
 import { HelpHint } from "../components/HelpHint";
+import {
+  IconBriefcase,
+  IconBuilding,
+  IconCalendar,
+  IconClipboard,
+  IconClock,
+  IconFileText,
+  IconMessage,
+  IconPin,
+  IconStatus,
+  IconUsers,
+  IconUsersGroup,
+  IconWallet,
+  IconWrench,
+  IconZap,
+} from "../components/ObjectDetailIcons";
 import { Modal } from "../components/Modal";
 import { PageLayout } from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
@@ -182,35 +199,119 @@ export function ObjectDetail() {
       </Link>
     ) : null;
 
+  const startLabel = obj.start_date
+    ? new Date(obj.start_date).toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
   return (
-    <PageLayout
-      title={obj.title}
-      actions={editAction}
-      subtitle={
-        <>
-          {obj.address_or_region} · {obj.work_type} ·{" "}
-          <span className="title-with-hint">
-            статус: {obj.status}
-            <HelpHint title="Статус объекта" label="Что означает статус">
-              <p>Статус задаёт этап жизни карточки: черновик, открыта к откликам, в работе или закрыта.</p>
-              <p>Компания управляет статусом в кабинете; исполнители видят актуальное значение в ленте и здесь.</p>
-            </HelpHint>
-          </span>
-        </>
-      }
-      breadcrumbs={breadcrumbs}
-      >
-      {obj.cover_image_url ? (
-        <div className="object-detail__cover">
-          <img src={obj.cover_image_url} alt="" className="object-detail__cover-img" />
+    <PageLayout title={obj.title} actions={editAction} breadcrumbs={breadcrumbs}>
+      <div className="object-detail__sheet card">
+        {obj.cover_image_url ? (
+          <div className="object-detail__cover object-detail__cover--in-sheet">
+            <img src={obj.cover_image_url} alt="" className="object-detail__cover-img" />
+          </div>
+        ) : null}
+
+        <div className="object-detail__sheet-body">
+          <div className="object-detail__chips" role="list">
+            {obj.address_or_region ? (
+              <span className="object-detail__chip" role="listitem">
+                <IconPin className="object-detail__chip-svg" />
+                {obj.address_or_region}
+              </span>
+            ) : null}
+            {obj.work_type ? (
+              <span className="object-detail__chip" role="listitem">
+                <IconBriefcase className="object-detail__chip-svg" />
+                {obj.work_type}
+              </span>
+            ) : null}
+            <span className="object-detail__chip object-detail__chip--status" role="listitem">
+              <IconStatus className="object-detail__chip-svg" />
+              {obj.status}
+              <HelpHint title="Статус объекта" label="Что означает статус">
+                <p>Статус задаёт этап жизни карточки: черновик, открыта к откликам, в работе или закрыта.</p>
+                <p>Компания управляет статусом в кабинете; исполнители видят актуальное значение в ленте и здесь.</p>
+              </HelpHint>
+            </span>
+          </div>
+
+          {obj.company_name || obj.company_city ? (
+            <div className="object-detail__company-row">
+              <div className="object-detail__company-main">
+                <IconBuilding className="object-detail__company-icon" />
+                <div>
+                  <div className="object-detail__company-name">{obj.company_name ?? "Компания"}</div>
+                  {obj.company_city ? <div className="object-detail__company-city muted">{obj.company_city}</div> : null}
+                </div>
+              </div>
+              <Link to={`/u/company/${obj.company_user_id}`} className="btn btn--sm btn--secondary">
+                Профиль компании
+              </Link>
+            </div>
+          ) : null}
+
+          {obj.description ? (
+            <section className="object-detail__block">
+              <h2 className="object-detail__block-title">
+                <IconFileText className="object-detail__block-title-icon" />
+                Описание
+              </h2>
+              <p className="object-detail__prose">{obj.description}</p>
+            </section>
+          ) : null}
+
+          <div className="object-detail__fact-grid">
+            <DetailFactRow icon={<IconUsers />} label="Нужно людей" value={String(obj.workers_needed)} />
+            {obj.brigades_needed > 0 ? (
+              <DetailFactRow icon={<IconUsersGroup />} label="Бригад" value={String(obj.brigades_needed)} />
+            ) : null}
+            {startLabel ? <DetailFactRow icon={<IconCalendar />} label="Старт работ" value={startLabel} /> : null}
+            {obj.duration_days ? (
+              <DetailFactRow icon={<IconClock />} label="Длительность" value={`${obj.duration_days} дн.`} />
+            ) : null}
+            {obj.payment_format ? (
+              <DetailFactRow icon={<IconWallet />} label="Формат оплаты" value={obj.payment_format} />
+            ) : null}
+            {obj.payment_amount_note ? (
+              <DetailFactRow icon={<IconWallet />} label="Сумма / условия оплаты" value={obj.payment_amount_note} />
+            ) : null}
+            {obj.urgency ? <DetailFactRow icon={<IconZap />} label="Срочность" value={obj.urgency} /> : null}
+            {obj.conditions_text ? (
+              <DetailFactRow
+                icon={<IconClipboard />}
+                label="Условия и требования"
+                value={obj.conditions_text}
+                fullWidth
+              />
+            ) : null}
+          </div>
+
+          {obj.required_skills_text ? (
+            <section className="object-detail__block object-detail__block--skills">
+              <h2 className="object-detail__block-title">
+                <IconWrench className="object-detail__block-title-icon" />
+                Навыки
+              </h2>
+              <p className="object-detail__prose">{obj.required_skills_text}</p>
+            </section>
+          ) : null}
+
+          {obj.contact_override ? (
+            <div className="object-detail__contact-banner">
+              <IconMessage className="object-detail__contact-icon" />
+              <div>
+                <div className="object-detail__contact-label">Контакт по объекту</div>
+                <div className="object-detail__contact-text">{obj.contact_override}</div>
+              </div>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      {obj.company_name || obj.company_city ? (
-        <div className="object-detail__company card">
-          <strong>{obj.company_name ?? "Компания"}</strong>
-          {obj.company_city ? <span className="muted"> · {obj.company_city}</span> : null}
-        </div>
-      ) : null}
+      </div>
 
       <Modal
         open={rejectId !== null}
@@ -237,32 +338,6 @@ export function ObjectDetail() {
         <p style={{ margin: 0 }}>Исполнитель увидит отклонённый статус. Продолжить?</p>
       </Modal>
 
-      {obj.description ? <p>{obj.description}</p> : null}
-      {(() => {
-        const lines = [
-          obj.workers_needed != null ? `Нужно людей: ${obj.workers_needed}` : null,
-          obj.brigades_needed ? `Нужно бригад: ${obj.brigades_needed}` : null,
-          obj.start_date ? `Старт: ${obj.start_date}` : null,
-          obj.duration_days ? `Срок: ${obj.duration_days} дн.` : null,
-          obj.payment_format ? `Формат оплаты: ${obj.payment_format}` : null,
-          obj.urgency ? `Срочность: ${obj.urgency}` : null,
-          obj.conditions_text ? `Условия: ${obj.conditions_text}` : null,
-        ].filter(Boolean) as string[];
-        return lines.length > 0 ? (
-          <ul className="object-detail__facts muted">
-            {lines.map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ul>
-        ) : null;
-      })()}
-      {obj.payment_amount_note ? <p>Оплата: {obj.payment_amount_note}</p> : null}
-      {obj.required_skills_text ? <p>Навыки: {obj.required_skills_text}</p> : null}
-      {obj.contact_override ? (
-        <p className="section-block">
-          <strong>Контакт по объекту:</strong> {obj.contact_override}
-        </p>
-      ) : null}
       {err ? <p className="form-error">{err}</p> : null}
 
       {canRespond ? (

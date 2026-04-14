@@ -8,6 +8,7 @@ export function AppFooter() {
         <div className="app-footer__links">
           <Link to="/">Главная</Link>
           <Link to="/feed">Объекты</Link>
+          <Link to="/help">Помощь</Link>
           <span className="app-footer__muted">Поддержка: через профиль и чаты</span>
         </div>
       </div>

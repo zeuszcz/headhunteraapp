@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
@@ -12,6 +12,20 @@ from app.models import Notification, User
 from app.schemas.notifications import NotificationRead
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
+
+
+@router.get("/unread-count")
+async def unread_notifications_count(
+    user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_db),
+) -> dict[str, int]:
+    stmt = (
+        select(func.count())
+        .select_from(Notification)
+        .where(Notification.user_id == user.id, Notification.read_at.is_(None))
+    )
+    n = await session.scalar(stmt)
+    return {"count": int(n or 0)}
 
 
 @router.get("", response_model=list[NotificationRead])

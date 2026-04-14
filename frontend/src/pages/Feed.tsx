@@ -6,6 +6,12 @@ import { FeedObjectCard } from "../components/FeedObjectCard";
 import { HelpHint } from "../components/HelpHint";
 import { PageLayout } from "../components/PageLayout";
 import { Pagination } from "../components/Pagination";
+import {
+  loadFeedPresets,
+  removeFeedPreset,
+  saveFeedPreset,
+  type FeedPreset,
+} from "../lib/feedPresets";
 import type { WorkObject } from "../types/workObject";
 
 export type { WorkObject } from "../types/workObject";
@@ -21,6 +27,7 @@ export function Feed() {
   const q = searchParams.get("q") ?? "";
   const payment = searchParams.get("payment") ?? "";
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const sortParam = searchParams.get("sort") === "old" ? "old" : "new";
 
   const [draftCity, setDraftCity] = useState(city);
   const [draftQ, setDraftQ] = useState(q);
@@ -30,6 +37,9 @@ export function Feed() {
   const [total, setTotal] = useState(0);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [presets, setPresets] = useState<FeedPreset[]>(() => loadFeedPresets());
+  const [presetName, setPresetName] = useState("");
 
   useEffect(() => {
     setDraftCity(city);
@@ -54,6 +64,9 @@ export function Feed() {
     const offset = (page - 1) * limit;
     params.set("limit", String(limit));
     params.set("offset", String(offset));
+    if (sortParam === "old") {
+      params.set("sort", "old");
+    }
     const qs = params.toString();
     const path = `/api/v1/objects?${qs}`;
     try {
@@ -67,7 +80,7 @@ export function Feed() {
     } finally {
       setLoading(false);
     }
-  }, [city, q, payment, page]);
+  }, [city, q, payment, page, sortParam]);
 
   useEffect(() => {
     void load();
@@ -85,6 +98,9 @@ export function Feed() {
       next.set("payment", draftPayment.trim());
     }
     next.set("page", "1");
+    if (sortParam === "old") {
+      next.set("sort", "old");
+    }
     setSearchParams(next);
   }
 
@@ -92,6 +108,45 @@ export function Feed() {
     const next = new URLSearchParams(searchParams);
     next.set("page", String(nextPage));
     setSearchParams(next);
+  }
+
+  function setSort(nextSort: "new" | "old") {
+    const next = new URLSearchParams(searchParams);
+    next.set("page", "1");
+    if (nextSort === "old") {
+      next.set("sort", "old");
+    } else {
+      next.delete("sort");
+    }
+    setSearchParams(next);
+  }
+
+  function applyPreset(p: FeedPreset) {
+    const next = new URLSearchParams();
+    if (p.city.trim()) {
+      next.set("city", p.city.trim());
+    }
+    if (p.q.trim()) {
+      next.set("q", p.q.trim());
+    }
+    if (p.payment.trim()) {
+      next.set("payment", p.payment.trim());
+    }
+    next.set("page", "1");
+    if (sortParam === "old") {
+      next.set("sort", "old");
+    }
+    setSearchParams(next);
+  }
+
+  function onSavePreset() {
+    const name = presetName.trim() || "Мой фильтр";
+    setPresets(saveFeedPreset(name, draftCity, draftQ, draftPayment));
+    setPresetName("");
+  }
+
+  function onRemovePreset(id: string) {
+    setPresets(removeFeedPreset(id));
   }
 
   const sidebar = (
@@ -119,7 +174,7 @@ export function Feed() {
   return (
     <PageLayout
       title="Объекты и задачи"
-      subtitle="Фильтры: город, поиск по тексту, подстрока в оплате. Страницы по 12 карточек."
+      subtitle="Фильтры, сохранённые фильтры в браузере, сортировка по дате, страницы по 12 карточек."
       breadcrumbs={[
         { to: "/", label: "Главная" },
         { to: "/feed", label: "Объекты" },
@@ -155,6 +210,61 @@ export function Feed() {
         <button type="button" className="btn btn--primary" style={{ justifySelf: "start" }} onClick={applyFilters}>
           Применить фильтры
         </button>
+      </div>
+
+      <div className="card feed-toolbar">
+        <label className="feed-toolbar__sort">
+          <span className="muted" style={{ fontSize: "0.88rem", marginRight: "0.5rem" }}>
+            Сортировка
+          </span>
+          <select
+            value={sortParam}
+            onChange={(e) => setSort(e.target.value === "old" ? "old" : "new")}
+            aria-label="Сортировка по дате"
+          >
+            <option value="new">Сначала новые</option>
+            <option value="old">Сначала старые</option>
+          </select>
+        </label>
+        <div className="feed-presets">
+          <span className="muted" style={{ fontSize: "0.88rem" }}>
+            Сохранённые фильтры (в этом браузере):
+          </span>
+          <div className="feed-presets__row">
+            <input
+              placeholder="Название набора"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              aria-label="Название сохранённого фильтра"
+            />
+            <button type="button" className="btn btn--secondary btn--sm" onClick={onSavePreset}>
+              Сохранить текущие поля
+            </button>
+          </div>
+          {presets.length > 0 ? (
+            <ul className="feed-presets__list">
+              {presets.map((p) => (
+                <li key={p.id}>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => applyPreset(p)}>
+                    {p.name}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--sm feed-presets__remove"
+                    onClick={() => onRemovePreset(p.id)}
+                    aria-label={`Удалить ${p.name}`}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.88rem" }}>
+              Пока нет — задайте поля вручную и нажмите «Сохранить текущие поля».
+            </p>
+          )}
+        </div>
       </div>
 
       {err ? (

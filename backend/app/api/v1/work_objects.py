@@ -37,7 +37,12 @@ async def list_objects(
     ),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0, description="Смещение для пагинации"),
+    sort: str = Query(
+        "new",
+        description="Сортировка по дате создания: new (новые первые) или old (старые первые)",
+    ),
 ) -> WorkObjectListResponse:
+    sort_key = sort if sort in ("new", "old") else "new"
     stmt = (
         select(WorkObject, CompanyProfile.company_name, CompanyProfile.city)
         .outerjoin(CompanyProfile, WorkObject.company_user_id == CompanyProfile.user_id)
@@ -79,7 +84,8 @@ async def list_objects(
         count_stmt = count_stmt.where(where_clause)
     total = int((await session.execute(count_stmt)).scalar_one())
 
-    stmt = stmt.order_by(WorkObject.created_at.desc()).offset(offset).limit(limit)
+    order = WorkObject.created_at.desc() if sort_key != "old" else WorkObject.created_at.asc()
+    stmt = stmt.order_by(order).offset(offset).limit(limit)
     result = await session.execute(stmt)
     out: list[WorkObjectRead] = []
     for wo, cn, cc in result.all():
